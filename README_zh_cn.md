@@ -1,6 +1,6 @@
 # RDPBlocker
 
-RDPBlocker是一款防止针对RDP(Remote Desktop Protocol)服务进行蛮力密码破解的工具。
+RDPBlocker是一款防止针对RDP(Remote Desktop Protocol)服务进行暴力密码破解的工具。
 
 由于RDP服务是由微软设计和维护的，其他操作系统很少使用，所以本工具是专门为Windows设计的，不支持其他操作系统。
 
@@ -41,7 +41,9 @@ time = 300
 
 ### 构建要求
 Visual Studio 2019 (MSVC 14.2)
+
 Boost Library https://www.boost.org
+
 spdlog https://github.com/gabime/spdlog
 
 如果使用本项目提供的工程文件，需要在编译前设置环境变量。

@@ -40,7 +40,9 @@ You can also try to compile this project yourself if you need to.
 
 ### Build Requirements
 Visual Studio 2019 (MSVC 14.2)
+
 Boost Library https://www.boost.org
+
 spdlog https://github.com/gabime/spdlog
 
 If you use the project files provided in this project, you need to set the environment variables before compiling.
