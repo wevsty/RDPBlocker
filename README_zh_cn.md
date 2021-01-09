@@ -9,12 +9,17 @@ RDPBlocker是一款防止针对RDP(Remote Desktop Protocol)服务进行暴力密
 ## 运行需求
 Windows 10 x64 或 Windows Server 2016 x64 以及更高版本。
 
+Windows 防火墙要求保持为开启状态。
+
+注意：如果系统位于内网环境，本工具可能无法正确记录外部访问IP，这种情况可能无法符合预期的工作需要自行注意。
+
 理论上代码支持Windows 7 以后的所有操作系统，但未经过测试。
 
 默认仅提供 X64版本，如需X86版本需要自行编译。
 
 ## 安装
 本工具提供了一个由 Inno Setup 打包的安装向导，用户可以直接使用该向导进行安装。
+
 程序将默认安装在 ```C:\Program Files\RDPBlocker```
 
 ```C:\Program Files\RDPBlocker\RDPBlocker.exe``` 将被注册为系统服务，作为系统服务，它将在系统启动时自动启动。
@@ -32,6 +37,13 @@ Windows 10 x64 或 Windows Server 2016 x64 以及更高版本。
 threshold = 3
 ; 以秒为单位的阻挡时间
 time = 300
+
+[Whitelist]
+; 位于 Whitelist 中的地址将不会受到限制
+; 语法为 : key = 正则表达式
+; 注意 : key 不能重复
+001 = 127.0.0.1
+002 = 192.168.*
 ```
 
 如果有需要，也可以下载压缩包自行配置安装。
