@@ -42,8 +42,8 @@ Filename: {app}\nssm.exe; Parameters: "start {#MyAppName}" ; Flags: runhidden
 ;Filename: "{cmd}"; Parameters: "sc create RDPBlocker start= auto DisplayName= RDPBlocker binPath= ""{app}\RDPBlocker.exe"""; Flags: runhidden
 
 [UninstallRun]
-Filename: "{app}\nssm.exe"; Parameters: "stop {#MyAppName}"; Flags: runhidden waituntilterminated; RunOnceId: "Uninstall"
-Filename: "{app}\nssm.exe"; Parameters: "remove {#MyAppName} confirm"; Flags: runhidden waituntilterminated; RunOnceId: "Uninstall"
+Filename: "{app}\nssm.exe"; Parameters: "stop {#MyAppName}"; Flags: runhidden waituntilterminated; RunOnceId: "StopServices"
+Filename: "{app}\nssm.exe"; Parameters: "remove {#MyAppName} confirm"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveServices"
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
