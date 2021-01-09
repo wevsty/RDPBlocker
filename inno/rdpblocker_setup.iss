@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "RDPBlocker"
-#define MyAppVersion "1.0.0.0"
+#define MyAppVersion "1.1.0.0"
 #define MyAppURL "https://github.com/wevsty/RDPBlocker"
 #define MyAppExeName "RDPBlocker.exe"
 
@@ -17,7 +17,7 @@ AppVersion={#MyAppVersion}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={pf}\{#MyAppName}
+DefaultDirName={commonpf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 LicenseFile=.\Release\LICENSE
@@ -42,8 +42,8 @@ Filename: {app}\nssm.exe; Parameters: "start {#MyAppName}" ; Flags: runhidden
 ;Filename: "{cmd}"; Parameters: "sc create RDPBlocker start= auto DisplayName= RDPBlocker binPath= ""{app}\RDPBlocker.exe"""; Flags: runhidden
 
 [UninstallRun]
-Filename: "{app}\nssm.exe"; Parameters: "stop {#MyAppName}"; Flags: runhidden waituntilterminated
-Filename: "{app}\nssm.exe"; Parameters: "remove {#MyAppName} confirm"; Flags: runhidden waituntilterminated
+Filename: "{app}\nssm.exe"; Parameters: "stop {#MyAppName}"; Flags: runhidden waituntilterminated; RunOnceId: "Uninstall"
+Filename: "{app}\nssm.exe"; Parameters: "remove {#MyAppName} confirm"; Flags: runhidden waituntilterminated; RunOnceId: "Uninstall"
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -58,7 +58,6 @@ Type: files; Name: "{app}\*.*"
 [Code]
 procedure ServiceStop(SvcName: String);
 var
-  ResultStr: String;
   ResultCode: Integer;
 begin
     //Exec('cmd.exe', '/c sc stop SvcName', '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
