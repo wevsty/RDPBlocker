@@ -113,12 +113,12 @@ void ProcessRemoteAddresses(
     // 校验IP地址
     if (IsIPAddress(address) ==  false)
     {
-        g_logger->info("Invalid address : []", address);
+        g_logger->info("Invalid address : {}", address);
         return;
     }
     if (IsWhitelistAddress(address) == true)
     {
-        g_logger->info("Whitelist address : []", address);
+        g_logger->info("Whitelist address : {}", address);
         return;
     }
     auto find_iter = address_count.find(address);
