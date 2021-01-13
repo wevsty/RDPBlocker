@@ -33,6 +33,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl";
 Source: ".\Release\RDPBlocker.exe"; DestDir: "{app}"; Flags: ignoreversion;BeforeInstall: ServiceStop('{#MyAppName}')
 Source: ".\Release\config.ini"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\Release\nssm.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\Release\start.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\Release\stop.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\Release\restart.bat"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Run]
@@ -47,6 +50,10 @@ Filename: "{app}\nssm.exe"; Parameters: "remove {#MyAppName} confirm"; Flags: ru
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
+Name: "{group}\config.ini"; Filename: "{app}\config.ini"
+Name: "{group}\start.bat"; Filename: "{app}\start.bat"
+Name: "{group}\stop.bat"; Filename: "{app}\stop.bat"
+Name: "{group}\restart.bat"; Filename: "{app}\restart.bat"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 
 [ThirdParty]
