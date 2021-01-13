@@ -8,13 +8,6 @@ bool ApplicationMutex::Create(const std::string& mutex_name)
     {
         return false;
     }
-    /*
-    // 如果已经存在同名的 Mutex 会得到 ERROR_ALREADY_EXISTS
-    if (GetLastError() == ERROR_ALREADY_EXISTS) {
-        Close();
-        return false;
-    }
-    */
     return true;
 }
 
@@ -61,7 +54,7 @@ ApplicationMutex::ApplicationMutex() :m_handle(NULL)
 
 ApplicationMutex::~ApplicationMutex()
 {
-
+    Close();
 }
 
 bool ApplicationMutex::Lock(const std::string& mutex_name)
