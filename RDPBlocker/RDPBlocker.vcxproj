@@ -161,7 +161,7 @@
     <ClCompile Include="boost_regex_utils.cpp" />
     <ClCompile Include="boost_xml_utils.cpp" />
     <ClCompile Include="logger.cpp" />
-    <ClCompile Include="program_mutex.cpp" />
+    <ClCompile Include="application_mutex.cpp" />
     <ClCompile Include="program_path_utils.cpp" />
     <ClCompile Include="RDP_Blocker.cpp" />
     <ClCompile Include="std_random_utils.cpp" />
@@ -172,7 +172,7 @@
   <ItemGroup>
     <ClInclude Include="block_address_status.h" />
     <ClInclude Include="expires_map_utils.h" />
-    <ClInclude Include="program_mutex.h" />
+    <ClInclude Include="application_mutex.h" />
     <ClInclude Include="program_path_utils.h" />
     <ClInclude Include="std_random_utils.h" />
     <ClInclude Include="boost_regex_utils.h" />

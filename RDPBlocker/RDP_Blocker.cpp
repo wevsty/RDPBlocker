@@ -1,28 +1,33 @@
 ﻿#include <fstream>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "logger.h"
+// Set Windows SDK Version
+#include <SDKDDKVer.h>
+
+#include <boost/asio.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/program_options.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/thread.hpp>
+
+#include "application_mutex.h"
 #include "block_address_status.h"
 #include "boost_xml_utils.h"
 #include "expires_map_utils.h"
 #include "firewall_controller.h"
+#include "logger.h"
 #include "program_path_utils.h"
-#include "program_mutex.h"
 #include "std_random_utils.h"
 #include "system_com_utils.h"
 #include "system_event_log.h"
 
-#include <boost/asio.hpp>
-#include <boost/thread.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/program_options.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
-
 namespace program_setting {
+    const std::string app_mutex_name = "RDPBlocker-locker";
     const std::string program_version = "1.1";
     const std::string rule_prefix = "AUTO_BLOCKED_";
     std::string config_file_path;
@@ -281,8 +286,8 @@ int main(int argc, char* argv[])
     prase_argv(argc, argv);
 
     // 确保系统中只有一个RDPBlocker运行，以免互相干扰。
-    HANDLE hAppMutex = NULL;
-    if (LockAppMutex(hAppMutex, "RDPBlocker-locker") == false)
+    ApplicationMutex app_mutex;
+    if (app_mutex.Lock(program_setting::app_mutex_name) == false)
     {
         g_logger->warn("RDPBlocker already running in the system");
         g_logger->warn("Please do not start more than one process at the same time");
@@ -314,6 +319,5 @@ int main(int argc, char* argv[])
     
     event_thread.join();
     io_thread.join();
-    UnLockAppMutex(hAppMutex);
     return 0;
 }
