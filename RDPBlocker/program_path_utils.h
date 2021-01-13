@@ -2,10 +2,14 @@
 #define __PROGRAM_PATH_UTILS__
 
 #include <string>
+#include <memory>
+
 #include <boost/locale.hpp>
 #include <boost/filesystem.hpp>
 
 #include <windows.h>
+
+#include "smart_ptr_utils.h"
 
 #define OS_MAX_PATH 32768
 

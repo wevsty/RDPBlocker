@@ -174,6 +174,7 @@
     <ClInclude Include="expires_map_utils.h" />
     <ClInclude Include="application_mutex.h" />
     <ClInclude Include="program_path_utils.h" />
+    <ClInclude Include="smart_ptr_utils.h" />
     <ClInclude Include="std_random_utils.h" />
     <ClInclude Include="boost_regex_utils.h" />
     <ClInclude Include="boost_xml_utils.h" />

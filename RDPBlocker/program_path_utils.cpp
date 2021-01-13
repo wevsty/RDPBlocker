@@ -3,7 +3,8 @@
 std::string get_self_file_path()
 {
     std::string program_path;
-    WCHAR lpFileName[OS_MAX_PATH];
+    std::shared_ptr<WCHAR> path_buffer_ptr = std::make_shared_array<WCHAR>(OS_MAX_PATH);
+    WCHAR* lpFileName = path_buffer_ptr.get();
     int nSize = ::GetModuleFileNameW(NULL, lpFileName, OS_MAX_PATH);
 
     program_path = boost::locale::conv::utf_to_utf<char>(lpFileName);
@@ -19,7 +20,8 @@ std::string get_self_dir_path()
 std::string get_work_dir()
 {
     std::string work_dir;
-    WCHAR szCurrentDirectory[OS_MAX_PATH];
+    std::shared_ptr<WCHAR> path_buffer_ptr = std::make_shared_array<WCHAR>(OS_MAX_PATH);
+    WCHAR* szCurrentDirectory = path_buffer_ptr.get();
     DWORD status = GetCurrentDirectoryW(OS_MAX_PATH, szCurrentDirectory);
     if (status == 0)
     {
