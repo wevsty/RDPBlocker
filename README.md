@@ -1,21 +1,26 @@
 # RDPBlocker
 
-RDPBlocker is a tool to prevent brute force password cracking against RDP(Remote Desktop Protocol) services.
+RDPBlocker is a tool to prevent brute force password cracking against RDP (Remote Desktop Protocol) services.
 
-Since the RDP service is designed and maintained by Microsoft and is rarely used by other operating systems, this tool is designed specifically for Windows and does not support other operating systems.
+This tool is developed by cpp and designed for Windows, with the advantages of simplicity of use, small size and easy installation.
 
-The advantage of this tool is that it is simple to use, small in size and easy to install.
 
 ## Runing Requirements
-Windows 10 x64 or Windows Server 2016 x64 or higher version.
+Windows 10 x64 or Windows Server 2016 x64 and higher.
 
-Windows Firewall needs to be turn on.
+Note: Theoretically the code supports all operating systems from Windows 7 onwards, but it has not been tested.
 
-Note: If the system is located in an intranet environment, this tool may not record the external access IP correctly, and this situation may not work as expected need to pay attention to yourself.
+Note: Only X64 version is provided by default, you need to compile it yourself if you need X86 version.
 
-The code should also support Windows 7 or higher version, but it has not been tested.
 
-Only the X64 version is provided by default, if you need the X86 version, you need to compile it yourself.
+## Cautions
+
+1、Requires Windows Firewall to be kept on, otherwise the program will not work properly.
+
+2、If the system is located in a LAN environment, Windows may not record the IP of external visitors correctly, and the situation may not work as expected.
+
+3、This tool cannot protect against security problems caused by system vulnerabilities, so you still need to install system updates.
+
 
 ## Install
 This tool provides an installation wizard packaged by Inno Setup, which users can use directly to install.
@@ -48,8 +53,10 @@ time = 300
 
 If users need, they can also download the zip package to configure and install it by themselves.
 
+
 ## Build
 You can also try to compile this project yourself if you need to.
+
 
 ### Build Requirements
 Visual Studio 2019 (MSVC 14.2)
