@@ -30,7 +30,7 @@
 
 namespace program_setting {
     const std::string app_mutex_name = "RDPBlocker-locker";
-    const std::string program_version = "1.1";
+    const std::string program_version = "1.1.1.0";
     const std::string rule_prefix = "AUTO_BLOCKED_";
     std::string config_file_path;
     std::vector<boost::regex> whitelist;
