@@ -10,7 +10,12 @@ namespace std
 	{
 		return std::shared_ptr<TYPE>(new TYPE[array_size], std::default_delete <TYPE[]>());
 	}
-}
 
+	template<typename TYPE>
+	std::unique_ptr<TYPE> make_unique_array(std::size_t array_size)
+	{
+		return std::unique_ptr<TYPE>(new TYPE[array_size], std::default_delete <TYPE[]>());
+	}
+}
 
 #endif //__STD_SMART_PTR_UTILS__

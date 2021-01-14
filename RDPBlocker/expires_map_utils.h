@@ -2,7 +2,6 @@
 #define __STD_EXPIRES_MAP_UTILS__
 
 #include <map>
-#include <iostream>
 
 template <typename T_MAP>
 void delete_expire_keys(T_MAP& map)
@@ -14,8 +13,8 @@ void delete_expire_keys(T_MAP& map)
 		it++;
 		if (current_it->second.is_expired() == true)
 		{
+			// delete key
 			map.erase(current_it);
-			// std::cout << "delete key" << std::endl;
 		}
 	}
 }

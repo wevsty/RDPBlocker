@@ -282,7 +282,7 @@ namespace firewall_controller {
             return false;
         }
 
-        // Iterate through all of the rules in pFwRules
+        // Iterate through all of the rules in pRules
         CComPtr<IUnknown> pEnumerator;
         hr = pRules->get__NewEnum(&pEnumerator);
         if (FAILED(hr))
