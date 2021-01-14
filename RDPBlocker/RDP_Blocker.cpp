@@ -1,4 +1,5 @@
-﻿#include <fstream>
+﻿#include <chrono>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -9,7 +10,7 @@
 #include <SDKDDKVer.h>
 
 #include <boost/asio.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/program_options.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -26,6 +27,7 @@
 #include "system_com_utils.h"
 #include "system_event_log.h"
 
+
 namespace program_setting {
     const std::string app_mutex_name = "RDPBlocker-locker";
     const std::string program_version = "1.1";
@@ -38,25 +40,66 @@ namespace program_setting {
     int block_time;
 }
 
-void UnblockRemoteAddresses(
-    std::shared_ptr<boost::asio::deadline_timer> unblock_timer_ptr,
-    const std::string& rule_name
-)
-{
-    g_logger->info("Delete rule {}", rule_name);
-    firewall_controller::DeleteRuleByName(rule_name);
-}
 
-void BlockRemoteAddresses(
-    const std::string& rule_name,
-    const std::string& block_address
-)
+class AutoBlockRemoteAddress : public std::enable_shared_from_this<AutoBlockRemoteAddress>
 {
-    g_logger->info("Add rule {}", rule_name);
-    firewall_controller::BlockInboundIP(rule_name, block_address);
-}
+    boost::asio::io_context& m_io_context;
+    boost::asio::steady_timer m_block_timer;
+    boost::asio::steady_timer m_unblock_timer;
 
-void PlanBlockRemoteAddresses(
+public:
+    AutoBlockRemoteAddress(boost::asio::io_context& io_context)
+        : m_io_context(io_context), m_block_timer(io_context), m_unblock_timer(io_context)
+    {
+        m_block_timer.expires_at(boost::asio::steady_timer::time_point::max());
+        m_unblock_timer.expires_at(boost::asio::steady_timer::time_point::max());
+    }
+
+    ~AutoBlockRemoteAddress()
+    {
+
+    }
+
+    void Block(
+        const std::string& rule_name,
+        const std::string& block_address
+    )
+    {
+        g_logger->info("Add rule {}", rule_name);
+        firewall_controller::BlockInboundIP(rule_name, block_address);
+    }
+
+    void Unblock(
+        const std::string& rule_name
+    )
+    {
+        g_logger->info("Delete rule {}", rule_name);
+        firewall_controller::DeleteRuleByName(rule_name);
+    }
+
+    void AsyncBlock(
+        const std::string& rule_name,
+        const std::string& block_address
+    )
+    {
+        m_io_context.post(
+            boost::bind(&AutoBlockRemoteAddress::Block, shared_from_this(), rule_name, block_address)
+        );
+    }
+
+    void AsyncUnblock(
+        const std::string& rule_name,
+        const int delay_time
+    )
+    {
+        m_unblock_timer.expires_from_now(std::chrono::seconds(delay_time));
+        m_unblock_timer.async_wait(
+            boost::bind(&AutoBlockRemoteAddress::Unblock, shared_from_this(), rule_name)
+        );
+    }
+};
+
+void CreateBlockWorkPlan(
     boost::asio::io_context& io_context,
     const std::string& address,
     const int block_time
@@ -64,21 +107,18 @@ void PlanBlockRemoteAddresses(
 {
     // 生成随机的规则名
     enum {
-        RULE_RANDOM_CHARS_LENGTH = 6
+        RULE_RANDOM_CHARS_LENGTH = 8
     };
     std::string rule_name = program_setting::rule_prefix;
     rule_name += random_string(RULE_RANDOM_CHARS_LENGTH);
 
+    std::shared_ptr<AutoBlockRemoteAddress> blocker_ptr = 
+        std::make_shared<AutoBlockRemoteAddress>(io_context);
     // 添加阻止规则
-    BlockRemoteAddresses(rule_name, address);
+    blocker_ptr->AsyncBlock(rule_name, address);
 
-    // 设定定时器自动移除阻止规则
-    std::shared_ptr<boost::asio::deadline_timer> unblock_timer_ptr;
-    unblock_timer_ptr = std::make_shared<boost::asio::deadline_timer>(io_context);
-    unblock_timer_ptr->expires_from_now(boost::posix_time::seconds(block_time));
-    unblock_timer_ptr->async_wait(
-        boost::bind(&UnblockRemoteAddresses, unblock_timer_ptr, rule_name)
-    );
+    // 超时自动删除规则
+    blocker_ptr->AsyncUnblock(rule_name, block_time);
 }
 
 // 验证IP合法性
@@ -146,7 +186,7 @@ void ProcessRemoteAddresses(
         if (find_iter->second.is_blocked() == false)
         {
             g_logger->info("Block address : {}", address);
-            PlanBlockRemoteAddresses(io_context, address, program_setting::block_time);
+            CreateBlockWorkPlan(io_context, address, program_setting::block_time);
             find_iter->second.set_blocked_interval(program_setting::block_time);
             find_iter->second.set_expire_interval(program_setting::block_time);
         }
@@ -154,8 +194,9 @@ void ProcessRemoteAddresses(
     delete_expire_keys(address_count);
 }
 
-void SubscribeSystemAuthEvent(boost::asio::io_context* io_context)
+void SubscribeSystemAuthEvent(boost::asio::io_context* io_context_ptr)
 {
+    boost::asio::io_context& io_context = *io_context_ptr;
     std::map<std::string, block_address_status> address_count;
     g_logger->info("Subscribe RDP auth failed event.");
     SubscribeSystemEvent os_event_log;
@@ -189,7 +230,7 @@ void SubscribeSystemAuthEvent(boost::asio::io_context* io_context)
             if (address != "-")
             {
                 g_logger->info("Address auth failed : {}", address);
-                ProcessRemoteAddresses(*io_context, address_count, address);
+                ProcessRemoteAddresses(io_context, address_count, address);
             }
         }
         
@@ -306,7 +347,7 @@ int main(int argc, char* argv[])
     
     // 创建一个空任务 防止io_context.run()立刻返回
     boost::asio::io_context::work idle_work(io_context);
-
+    
     // 启动IO线程
     boost::thread io_thread(
         boost::bind(&boost::asio::io_context::run, &io_context)
