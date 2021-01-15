@@ -22,7 +22,9 @@
 #include "expires_map_utils.h"
 #include "firewall_controller.h"
 #include "logger.h"
+#include "PECheckSum.h"
 #include "program_path_utils.h"
+#include "self_exit_code.h"
 #include "std_random_utils.h"
 #include "system_com_utils.h"
 #include "system_event_log.h"
@@ -30,7 +32,7 @@
 
 namespace program_setting {
     const std::string app_mutex_name = "RDPBlocker-locker";
-    const std::string program_version = "1.1.1.0";
+    const std::string program_version = "1.1.2.0";
     const std::string rule_prefix = "AUTO_BLOCKED_";
     std::string config_file_path;
     std::vector<boost::regex> whitelist;
@@ -198,13 +200,14 @@ void SubscribeSystemAuthEvent(boost::asio::io_context* io_context_ptr)
 {
     boost::asio::io_context& io_context = *io_context_ptr;
     std::map<std::string, block_address_status> address_count;
-    g_logger->info("Subscribe RDP auth failed event.");
+    // g_logger->info("Subscribe RDP auth failed event.");
+    g_logger->info("Subscribe RDP event.");
     SubscribeSystemEvent os_event_log;
     // 订阅RDP登录失败事件
     if (os_event_log.SubscribeRDPAuthFailedEvent() != true)
     {
         g_logger->error("SubscribeRDPAuthFailedEvent failed.");
-        return;
+        std::exit(EXIT_CODE::SUBSCRIBE_EVENT_ERROR);
     }
     while (true)
     {
@@ -260,18 +263,29 @@ bool load_config_file(const std::string& file_path)
     catch (std::exception& err)
     {
         bRet = false;
-        // std::cout << err.what() << std::endl;
-        g_logger->error("Loading configuration file error.");
-        g_logger->error(err.what());
+        std::cout << "Loading configuration file error." << std::endl;
+        std::cout << err.what() << std::endl;
     }
     return bRet;
 }
 
 // 确保程序目录为工作目录
-void ensure_work_dir()
+void ensure_self_work_dir()
 {
     std::string work_dir = get_self_dir_path();
     set_work_dir(work_dir);
+}
+
+// 对程序自身进行校验
+void check_self_file()
+{
+    std::string self_path = get_self_file_path();
+    std::wstring ws_path = boost::locale::conv::utf_to_utf<wchar_t>(self_path);
+    bool status = PECheckSum(ws_path);
+    if (status == false)
+    {
+        std::exit(EXIT_CODE::CHECKSUM_ERROR);
+    }
 }
 
 // 解析命令行参数
@@ -292,7 +306,7 @@ void prase_argv(int argc, char* argv[])
         if (var_map.count("help"))
         {
             std::cout << options << std::endl;
-            std::exit(1);
+            std::exit(EXIT_CODE::SUCCESS);
         }
 
         if (var_map.count("config") == 0)
@@ -302,29 +316,31 @@ void prase_argv(int argc, char* argv[])
         }
         if (load_config_file(program_setting::config_file_path) == false)
         {
-            std::exit(1);
+            std::exit(EXIT_CODE::LOAD_CONFIG_ERROR);
         }
     }
     catch (std::exception& err)
     {
-        // std::cout << err.what() << std::endl;
-        g_logger->error("Parsing command line error.");
-        g_logger->error(err.what());
-        std::exit(1);
+        std::cout << "Parsing command line error" << std::endl;
+        std::cout << err.what() << std::endl;
+        std::exit(EXIT_CODE::COMMAND_PARSE_ERROR);
     }
 }
 
 int main(int argc, char* argv[])
 {
     // 确保程序目录为工作目录
-    ensure_work_dir();
+    ensure_self_work_dir();
+
+    // 对程序文件进行自校验
+    check_self_file();
+
+    // 解析命令行参数
+    prase_argv(argc, argv);
 
     // 初始化logger
     init_logger();
     g_logger->info("RDPBlocker Version {}", program_setting::program_version);
-
-    // 解析命令行参数
-    prase_argv(argc, argv);
 
     // 确保系统中只有一个RDPBlocker运行，以免互相干扰。
     ApplicationMutex app_mutex;
@@ -332,7 +348,7 @@ int main(int argc, char* argv[])
     {
         g_logger->warn("RDPBlocker already running in the system");
         g_logger->warn("Please do not start more than one process at the same time");
-        return 1;
+        return EXIT_CODE::APP_EXIST_ERROR;
     }
 
     // 初始化COM
@@ -360,5 +376,5 @@ int main(int argc, char* argv[])
     
     event_thread.join();
     io_thread.join();
-    return 0;
+    return EXIT_CODE::SUCCESS;
 }

@@ -154,6 +154,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <SetChecksum>true</SetChecksum>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -162,6 +163,7 @@
     <ClCompile Include="boost_xml_utils.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="application_mutex.cpp" />
+    <ClCompile Include="PECheckSum.cpp" />
     <ClCompile Include="program_path_utils.cpp" />
     <ClCompile Include="RDP_Blocker.cpp" />
     <ClCompile Include="std_random_utils.cpp" />
@@ -173,7 +175,9 @@
     <ClInclude Include="block_address_status.h" />
     <ClInclude Include="expires_map_utils.h" />
     <ClInclude Include="application_mutex.h" />
+    <ClInclude Include="PECheckSum.h" />
     <ClInclude Include="program_path_utils.h" />
+    <ClInclude Include="self_exit_code.h" />
     <ClInclude Include="smart_ptr_utils.h" />
     <ClInclude Include="std_random_utils.h" />
     <ClInclude Include="boost_regex_utils.h" />
