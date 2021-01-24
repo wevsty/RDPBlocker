@@ -29,13 +29,13 @@ namespace firewall_controller {
 	bool SetFireWallRuleEnabled(CComPtr<INetFwRule>& pRule, const bool enable = false);
 	bool AddRule(CComPtr<INetFwRules>& rules, CComPtr<INetFwRule>& pRule);
 	bool DeleteRule(CComPtr<INetFwRules>& rules, const std::string& rule_name);
-	// ×èµ²ÈëÕ¾IP
+	// é˜»æŒ¡å…¥ç«™IP
 	bool BlockInboundIP(const std::string& name, const std::string& address);
-	// °´ÕÕ¹æÔòÃû³ÆÉ¾³ı·À»ğÇ½¹æÔò
+	// æŒ‰ç…§è§„åˆ™åç§°åˆ é™¤é˜²ç«å¢™è§„åˆ™
 	bool DeleteRuleByName(const std::string& rule_name);
-	// °´ÕÕÕıÔò±í´ïÊ½É¾³ı·À»ğÇ½¹æÔò
+	// æŒ‰ç…§æ­£åˆ™è¡¨è¾¾å¼åˆ é™¤é˜²ç«å¢™è§„åˆ™
 	bool DeleteRulesByRegex(const std::string& expr);
-	// ÅĞ¶Ï·À»ğÇ½ÊÇ·ñÒÑ¿ªÆô
+	// åˆ¤æ–­é˜²ç«å¢™æ˜¯å¦å·²å¼€å¯
 	bool IsFireWallEnabled();
 }
 

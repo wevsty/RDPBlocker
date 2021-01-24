@@ -38,26 +38,26 @@ public:
     EventLogHandleWrapper m_handle_subscription;
     NullKernelHandleWrapper m_handle_signal_event;
 
-    // ¶©ÔÄRDPµÇÂ¼Ê§°ÜÊÂ¼ş
+    // è®¢é˜…RDPç™»å½•å¤±è´¥äº‹ä»¶
     bool SubscribeRDPAuthFailedEvent();
-    // ¶©ÔÄÏµÍ³ÊÂ¼ş
+    // è®¢é˜…ç³»ç»Ÿäº‹ä»¶
     bool Subscribe(const std::string& path, const std::string& query);
-    // »ñÈ¡ÊÂ¼ş¼ÇÂ¼ËùĞèÒªµÄ»º³åÇø´óĞ¡
+    // è·å–äº‹ä»¶è®°å½•æ‰€éœ€è¦çš„ç¼“å†²åŒºå¤§å°
     DWORD GetEventLogRecordSize(EVT_HANDLE hEvent, DWORD& dwBufferSize);
-    // »ñÈ¡ÊÂ¼ş¼ÇÂ¼
+    // è·å–äº‹ä»¶è®°å½•
     DWORD GetEventLogRecord(EVT_HANDLE hEvent, std::string& output);
-    // »ñÈ¡¶àÌõ¼ÇÂ¼²¢´¢´æµ½vector
+    // è·å–å¤šæ¡è®°å½•å¹¶å‚¨å­˜åˆ°vector
     bool StoreEventLogResults(std::vector<std::string>& vt_results);
-    // ´´½¨ĞÅºÅ
+    // åˆ›å»ºä¿¡å·
     bool CreateSignal();
-    // µÈ´ıĞÅºÅ
+    // ç­‰å¾…ä¿¡å·
     bool WaitSignal();
-    // ÉèÖÃĞÅºÅ
+    // è®¾ç½®ä¿¡å·
     bool SetSignal();
-    // ÖØÖÃĞÅºÅ
+    // é‡ç½®ä¿¡å·
     bool ResetSignal();
 };
 
-// °ÑXMLÊı¾İÖĞµÄEvent.EventDataÏîÏÂµÄËùÓĞÏîÄ¿Ìí¼Óµ½map
+// æŠŠXMLæ•°æ®ä¸­çš„Event.EventDataé¡¹ä¸‹çš„æ‰€æœ‰é¡¹ç›®æ·»åŠ åˆ°map
 bool GetLogEventDataToMap(const std::string& xml_data, std::map<std::string, std::string>& attr);
 #endif //__SYSTEM_EVENT_LOG_CLASS__

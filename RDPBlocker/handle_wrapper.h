@@ -78,7 +78,7 @@ public:
         return m_Handle;
     }
 
-    // ÔÊĞí´Ó¾ä±ú¸´ÖÆ
+    // å…è®¸ä»å¥æŸ„å¤åˆ¶
     HandleWrapper<HandleType, Traits>& operator =(const HandleType& src)
     {
         Close();
@@ -86,14 +86,14 @@ public:
         return *this;
     }
 
-    // ×ªÒÆ¹¹Ôì
+    // è½¬ç§»æ„é€ 
     HandleWrapper(HandleWrapper<HandleType, Traits>&& src)
     {
         m_Handle = src.m_Handle;
         src.m_Handle = Traits::InvalidValue();
     }
 
-    // ×ªÒÆ¿½±´
+    // è½¬ç§»æ‹·è´
     HandleWrapper<HandleType, Traits>& operator =(HandleWrapper<HandleType, Traits>& src)
     {
         m_Handle = src.m_Handle;
@@ -103,9 +103,9 @@ public:
 
 /*
 private:
-    // ½ûÖ¹¹¹Ôì¿½±´
+    // ç¦æ­¢æ„é€ æ‹·è´
     HandleWrapper(const HandleWrapper<HandleType, Traits>&) = delete;
-    // ½ûÖ¹¸´ÖÆ¿½±´
+    // ç¦æ­¢å¤åˆ¶æ‹·è´
     HandleWrapper<HandleType, Traits>& operator =(const HandleWrapper<HandleType, Traits>&) = delete;
 */
 };

@@ -2,7 +2,7 @@
 
 bool SubscribeSystemEvent::SubscribeRDPAuthFailedEvent()
 {
-	// ²éÑ¯Óï¾ä
+	// æŸ¥è¯¢è¯­å¥
 	// "Event/System[EventID=4625]";
 	// "*[System[(EventID=4625) and TimeCreated[timediff(@SystemTime) <= 86400000]]]";
 	std::string path = "Security";

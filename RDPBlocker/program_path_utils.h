@@ -13,16 +13,16 @@
 
 #define OS_MAX_PATH 32768
 
-// »ñÈ¡³ÌĞò×ÔÉíÂ·¾¶
+// è·å–ç¨‹åºè‡ªèº«è·¯å¾„
 std::string get_self_file_path();
 
-// »ñÈ¡³ÌĞò×ÔÉíËùÔÚµÄÎÄ¼ş¼ĞÂ·¾¶
+// è·å–ç¨‹åºè‡ªèº«æ‰€åœ¨çš„æ–‡ä»¶å¤¹è·¯å¾„
 std::string get_self_dir_path();
 
-// »ñÈ¡¹¤×÷Ä¿Â¼
+// è·å–å·¥ä½œç›®å½•
 std::string get_work_dir();
 
-// ÉèÖÃ¹¤×÷Ä¿Â¼
+// è®¾ç½®å·¥ä½œç›®å½•
 bool set_work_dir(const std::string& path);
 
 
