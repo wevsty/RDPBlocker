@@ -325,4 +325,34 @@ namespace firewall_controller {
         }
         return true;
     }
+
+    bool IsFireWallEnabled()
+    {
+        bool bEanbled = false;
+        CComPtr<INetFwPolicy2> pPolicy = GetFireWallPolicy();
+        if (pPolicy == NULL)
+        {
+            return false;
+        }
+
+        VARIANT_BOOL bVarEnabled = FALSE;
+        static NET_FW_PROFILE_TYPE2 FwProFileBitmaskArray[] = {
+            NET_FW_PROFILE2_DOMAIN,
+            NET_FW_PROFILE2_PRIVATE,
+            NET_FW_PROFILE2_PUBLIC
+        };
+
+        for (auto bitmask : FwProFileBitmaskArray)
+        {
+            if (SUCCEEDED(pPolicy->get_FirewallEnabled(bitmask, &bVarEnabled)))
+            {
+                if (bVarEnabled != FALSE)
+                {
+                    bEanbled = true;
+                    break;
+                }
+            }
+        }
+        return bEanbled;
+    }
 }

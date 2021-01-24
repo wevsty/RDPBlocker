@@ -32,7 +32,7 @@
 
 namespace program_setting {
     const std::string app_mutex_name = "RDPBlocker-locker";
-    const std::string program_version = "1.1.2.0";
+    const std::string program_version = "1.1.3.0";
     const std::string rule_prefix = "AUTO_BLOCKED_";
     std::string config_file_path;
     std::vector<boost::regex> whitelist;
@@ -284,6 +284,8 @@ void check_self_file()
     bool status = PECheckSum(ws_path);
     if (status == false)
     {
+        std::cout << "Check file failed" << std::endl;
+        std::cout << "The file has been corrupted" << std::endl;
         std::exit(EXIT_CODE::CHECKSUM_ERROR);
     }
 }
@@ -354,6 +356,13 @@ int main(int argc, char* argv[])
     // 初始化COM
     g_logger->debug("Initialization COM");
     SystemComInitialize sys_com_init;
+
+    // 检测防火墙是否已开启
+    if (firewall_controller::IsFireWallEnabled() == false)
+    {
+        g_logger->error("Windows Firewall must be turn on");
+        return EXIT_CODE::FIREWALL_ERROR;
+    }
 
     // 重启时自动删除遗留规则
     g_logger->debug("Remove existing auto-blocking rules");

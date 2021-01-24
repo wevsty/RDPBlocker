@@ -35,6 +35,8 @@ namespace firewall_controller {
 	bool DeleteRuleByName(const std::string& rule_name);
 	// 按照正则表达式删除防火墙规则
 	bool DeleteRulesByRegex(const std::string& expr);
+	// 判断防火墙是否已开启
+	bool IsFireWallEnabled();
 }
 
 
