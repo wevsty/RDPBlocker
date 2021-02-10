@@ -1,3 +1,3 @@
 @echo off
-sc stop RDPBlocker
-sc start RDPBlocker
+net stop RDPBlocker
+net start RDPBlocker
