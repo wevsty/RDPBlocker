@@ -31,15 +31,22 @@
 
 
 namespace program_setting {
+    // 固定常量
     const std::string app_mutex_name = "RDPBlocker-locker";
-    const std::string program_version = "1.1.3.0";
+    const std::string program_version = "1.1.4.0";
     const std::string rule_prefix = "AUTO_BLOCKED_";
+
+    // 配置文件路径
     std::string config_file_path;
-    std::vector<boost::regex> whitelist;
+
+    // log 配置
+    logger_options logger_setting;
     // 阻挡阈值
     int block_threshold;
     // 阻挡时间
     int block_time;
+    // 白名单列表
+    std::vector<boost::regex> whitelist;
 }
 
 
@@ -249,10 +256,18 @@ bool load_config_file(const std::string& file_path)
         boost::property_tree::ptree pt;
         boost::property_tree::ini_parser::read_ini(file_path, pt);
 
+        // 日志配置
+        program_setting::logger_setting.filename = pt.get<std::string>("Log.filename");
+        program_setting::logger_setting.max_size = pt.get<int>("Log.max_size");
+        program_setting::logger_setting.max_files = pt.get<int>("Log.max_files");
+        std::string output_level = pt.get<std::string>("Log.level");
+        program_setting::logger_setting.set_level_string(output_level);
+
+        // 阻挡配置
         program_setting::block_threshold = pt.get<int>("Block.threshold");
         program_setting::block_time = pt.get<int>("Block.time");
 
-    
+        // 白名单配置
         boost::property_tree::ptree whitelist_pt = pt.get_child("Whitelist");
         for (auto& it : whitelist_pt)
         {
@@ -341,7 +356,7 @@ int main(int argc, char* argv[])
     prase_argv(argc, argv);
 
     // 初始化logger
-    init_logger();
+    init_global_logger(program_setting::logger_setting);
     g_logger->info("RDPBlocker Version {}", program_setting::program_version);
 
     // 确保系统中只有一个RDPBlocker运行，以免互相干扰。
