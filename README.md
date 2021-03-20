@@ -36,19 +36,37 @@ The configuration file can be changed according to the user's needs.
 Example :
 
 ```ini
+[Log]
+; Log filename
+filename = logger.txt
+; Max log file size 10MB
+max_size = 10485760
+; Max log files
+max_files = 3
+; Output level
+; The value can be:
+; trace debug info warning error critical off
+level = info
+
 [Block]
 ; Blocking Threshold
 ; IP addresses will be blocked when an incorrect account or password is entered within a specified period of time greater than a threshold value.
 threshold = 3
 ; Blocking time in the seconds
-time = 300
+time = 600
 
 [Whitelist]
 ; Addresses in the whitelist will not be subject to any restrictions
 ; The syntax is key = Regular expressions
 ; Note : Keys cannot be repeated
-001 = 127.0.0.1
-002 = 192.168.*
+001 = 127\.0\.0\.1
+; 192.168.0.0-192.168.255.255
+002 = ^192\.168.*
+; 172.16.0.0-172.31.255.255
+003 = ^172\.(1[6-9]|2[0-9]|3[0-1])\..*
+; 10.0.0.0-10.255.255.255
+004 = ^10\..*
+
 ```
 
 If users need, they can also download the zip package to configure and install it by themselves.
