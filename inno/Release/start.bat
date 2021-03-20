@@ -1,2 +1,2 @@
 @echo off
-sc start RDPBlocker
+net start RDPBlocker

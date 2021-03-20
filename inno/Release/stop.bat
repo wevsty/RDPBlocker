@@ -1,2 +1,2 @@
 @echo off
-sc stop RDPBlocker
+net stop RDPBlocker

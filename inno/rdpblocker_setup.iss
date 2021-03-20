@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "RDPBlocker"
-#define MyAppVersion "1.1.3.0"
+#define MyAppVersion "1.1.4.0"
 #define MyAppURL "https://github.com/wevsty/RDPBlocker"
 #define MyAppExeName "RDPBlocker.exe"
 
@@ -67,7 +67,6 @@ procedure ServiceStop(SvcName: String);
 var
   ResultCode: Integer;
 begin
-    //Exec('cmd.exe', '/c sc stop SvcName', '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
-    //ShellExec('', 'cmd.exe', 'cmd /c net stop SvcName& sc delete SvcName', '', SW_HIDE, ewWaitUntilTerminated, ResultCode); 
-    Exec('sc.exe', 'stop ' + SvcName , '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    // Exec('sc.exe', 'stop ' + SvcName , '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    Exec('net.exe', 'stop ' + SvcName , '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 end;
