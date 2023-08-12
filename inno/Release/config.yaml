@@ -8,12 +8,20 @@ block_time: 600
 # default: false
 check_workstation: false
 log:
+  # Log filename
   filename: logger.txt
-  max_size: 1024000
+  # Max log file size 10485760=10MB
+  max_size: 10485760
+  # Max log files
   max_files: 3
+  # Log output level
+  # The value can be:
+  # trace debug info warning error critical off
   level: info
 # Addresses in the whitelist will not be subject to any restrictions.
 # Note that the expression is a regular expression.
 IP_whitelist:
   - 127\.0\.0\..*
-  - 192\.168\..*
+  - ^192\.168.*
+  - ^172\.(1[6-9]|2[0-9]|3[0-1])\..*
+  - ^10\..*
