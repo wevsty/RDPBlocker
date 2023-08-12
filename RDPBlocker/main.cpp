@@ -5,17 +5,18 @@
 #include <memory>
 #include <string>
 #include <vector>
-
+#include <fstream>
 // Set Windows SDK Version
 #include <SDKDDKVer.h>
 
 #include <boost/asio.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/program_options.hpp>
-#include <boost/property_tree/ini_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
+//#include <boost/property_tree/ini_parser.hpp>
+//#include <boost/property_tree/ptree.hpp>
 #include <boost/thread.hpp>
 
+#include "yaml.h"
 #include "application_mutex.h"
 #include "block_address_status.h"
 #include "boost_xml_utils.h"
@@ -27,13 +28,13 @@
 #include "self_exit_code.h"
 #include "random_utils.h"
 #include "system_com_utils.h"
-#include "system_event_log.h"
+#include "subscribe_system_event.h"
 
 
 namespace program_setting {
     // 固定常量
-    const std::string app_mutex_name = "RDPBlocker-locker";
-    const std::string program_version = "1.1.4.0";
+    const std::string app_mutex_name = "RDPBlocker_mutex";
+    const std::string program_version = "1.2.0.0";
     const std::string rule_prefix = "AUTO_BLOCKED_";
 
     // 配置文件路径
@@ -41,12 +42,15 @@ namespace program_setting {
 
     // log 配置
     logger_options logger_setting;
+
     // 阻挡阈值
     int block_threshold;
     // 阻挡时间
     int block_time;
-    // 白名单列表
-    std::vector<boost::regex> whitelist;
+    // 检查主机名
+    bool check_workstation;
+    // IP白名单列表
+    std::vector<boost::regex> ip_whitelist;
 }
 
 
@@ -148,7 +152,7 @@ bool IsIPAddress(const std::string& data)
 // 验证IP是否为白名单
 bool IsWhitelistAddress(const std::string& data)
 {
-    for (const auto& expr : program_setting::whitelist)
+    for (const auto& expr : program_setting::ip_whitelist)
     {
         if (regex_find_match(expr, data) == true)
         {
@@ -203,47 +207,81 @@ void ProcessRemoteAddresses(
     delete_expire_keys(address_count);
 }
 
-void SubscribeSystemAuthEvent(boost::asio::io_context* io_context_ptr)
+void ProcessRDPAuthFailedEvent(boost::asio::io_context* io_context_ptr)
 {
     boost::asio::io_context& io_context = *io_context_ptr;
     std::map<std::string, block_address_status> address_count;
     // g_logger->info("Subscribe RDP auth failed event.");
-    g_logger->info("Subscribe RDP event.");
-    SubscribeSystemEvent os_event_log;
+    g_logger->info("Subscribe RDPAuthFailedEvent.");
+    RDPAuthFailedEvent auth_failed_evt;
     // 订阅RDP登录失败事件
-    if (os_event_log.SubscribeRDPAuthFailedEvent() != true)
+    if (auth_failed_evt.Subscribe() != true)
     {
-        g_logger->error("SubscribeRDPAuthFailedEvent failed.");
+        g_logger->error("Subscribe RDPAuthFailedEvent failed.");
         std::exit(EXIT_CODE::SUBSCRIBE_EVENT_ERROR);
     }
     while (true)
     {
         g_logger->debug("Wait event.");
-        std::vector<std::string> vt_buffer;
-        // 等待事件信号
-        if (os_event_log.WaitSignal() != true)
-        {
-            break;
-        }
-        // 保存订阅的日志信息
-        os_event_log.StoreEventLogResults(vt_buffer);
-        // 复位信号
-        os_event_log.ResetSignal();
+        std::string event_xml_data;
+        auth_failed_evt.Pop(event_xml_data);
 
-        // 处理暂存的信息
-        for (auto& xml_data : vt_buffer)
+        std::map<std::string, std::string> event_attr;
+        EventDataToMap(event_xml_data, event_attr);
+        std::string address = event_attr["IpAddress"];
+        if (address != "-")
         {
-            std::map<std::string, std::string> event_attr;
-            GetLogEventDataToMap(xml_data, event_attr);
-            std::string address = event_attr["IpAddress"];
-            //std::cout << address << std::endl;
-            if (address != "-")
+            g_logger->info("Address auth failed : {}", address);
+            ProcessRemoteAddresses(io_context, address_count, address);
+        }
+    }
+}
+
+void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
+{
+    boost::asio::io_context& io_context = *io_context_ptr;
+    std::map<std::string, block_address_status> address_count;
+    std::map<std::string, std::string> workstation_name_map;
+    g_logger->info("Subscribe RDPAuthSucceedEvent.");
+    RDPAuthSucceedEvent auth_succeed_evt;
+    // 订阅RDP登录失败事件
+    if (auth_succeed_evt.Subscribe() != true)
+    {
+        g_logger->error("Subscribe RDPAuthSucceedEvent failed.");
+        std::exit(EXIT_CODE::SUBSCRIBE_EVENT_ERROR);
+    }
+    while (true)
+    {
+        g_logger->debug("Wait event.");
+        std::string event_xml_data;
+        auth_succeed_evt.Pop(event_xml_data);
+
+        std::map<std::string, std::string> event_attr;
+        EventDataToMap(event_xml_data, event_attr);
+        std::string workstation_name = event_attr["WorkstationName"];
+        std::string user_name = event_attr["TargetUserName"];
+        std::string address = event_attr["IpAddress"];
+        if (workstation_name != "" && user_name != "" && address != "-")
+        {
+            auto it = workstation_name_map.find(user_name);
+            if (it == workstation_name_map.end())
             {
-                g_logger->info("Address auth failed : {}", address);
-                ProcessRemoteAddresses(io_context, address_count, address);
+                workstation_name_map[user_name] = workstation_name;
+            }
+            else
+            {
+                if (it->second == workstation_name)
+                {
+                    continue;
+                }
+                else
+                {
+                    g_logger->info("Check workstation name failed : {}", workstation_name);
+                    //g_logger->info("Block address : {}", address);
+                    ProcessRemoteAddresses(io_context, address_count, address);
+                }
             }
         }
-        
     }
 }
 
@@ -253,26 +291,27 @@ bool load_config_file(const std::string& file_path)
     bool bRet = true;
     try
     {
-        boost::property_tree::ptree pt;
-        boost::property_tree::ini_parser::read_ini(file_path, pt);
+        YAML::Node config = YAML::LoadFile(file_path);
 
         // 日志配置
-        program_setting::logger_setting.filename = pt.get<std::string>("Log.filename");
-        program_setting::logger_setting.max_size = pt.get<int>("Log.max_size");
-        program_setting::logger_setting.max_files = pt.get<int>("Log.max_files");
-        std::string output_level = pt.get<std::string>("Log.level");
+        const YAML::Node& node_logs = config["log"];
+        program_setting::logger_setting.filename = node_logs["filename"].as<std::string>();
+        program_setting::logger_setting.max_size = node_logs["max_size"].as<int>();
+        program_setting::logger_setting.max_files = node_logs["max_files"].as<int>();
+        std::string output_level = node_logs["level"].as<std::string>();
         program_setting::logger_setting.set_level_string(output_level);
 
         // 阻挡配置
-        program_setting::block_threshold = pt.get<int>("Block.threshold");
-        program_setting::block_time = pt.get<int>("Block.time");
+        program_setting::block_threshold = config["block_threshold"].as<int>();
+        program_setting::block_time = config["block_time"].as<int>();
+        program_setting::check_workstation = config["check_workstation"].as<bool>();
 
         // 白名单配置
-        boost::property_tree::ptree whitelist_pt = pt.get_child("Whitelist");
-        for (auto& it : whitelist_pt)
-        {
-            boost::regex regex_obj(it.second.data());
-            program_setting::whitelist.push_back(regex_obj);
+        const YAML::Node& node_ip_whiltelist = config["IP_whitelist"];
+        for (unsigned i = 0; i < node_ip_whiltelist.size(); i++) {
+            std::string regex_string = node_ip_whiltelist[i].as<std::string>();
+            boost::regex regex_obj(regex_string);
+            program_setting::ip_whitelist.push_back(regex_obj);
         }
     }
     catch (std::exception& err)
@@ -328,8 +367,8 @@ void prase_argv(int argc, char* argv[])
 
         if (var_map.count("config") == 0)
         {
-            // 如果未设定加载的配置文件默认为 config.ini
-            program_setting::config_file_path = "config.ini";
+            // 如果未设定加载的配置文件默认为 config.yaml
+            program_setting::config_file_path = "config.yaml";
         }
         if (load_config_file(program_setting::config_file_path) == false)
         {
@@ -395,8 +434,14 @@ int main(int argc, char* argv[])
 
     // 启动事件订阅线程
     boost::thread event_thread(
-        boost::bind(&SubscribeSystemAuthEvent, &io_context)
+        boost::bind(&ProcessRDPAuthFailedEvent, &io_context)
     );
+    if (program_setting::check_workstation)
+    {
+        boost::thread event_thread(
+            boost::bind(&ProcessRDPAuthSucceedEvent, &io_context)
+        );
+    }
     
     event_thread.join();
     io_thread.join();

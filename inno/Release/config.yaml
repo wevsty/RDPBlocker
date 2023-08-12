@@ -1,0 +1,11 @@
+block_threshold: 3
+block_time: 300
+check_workstation: false
+log:
+  filename: logger.txt
+  max_size: 1024000
+  max_files: 3
+  level: info
+IP_whitelist:
+  - 127\.0\.0\..*
+  - 192\.168\..*

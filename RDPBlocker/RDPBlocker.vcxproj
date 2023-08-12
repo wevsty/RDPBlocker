@@ -78,14 +78,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(BOOST_INCLUDE);$(SPDLOG_INCLUDE);$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_LIB);$(SPDLOG_LIB);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BOOST_INCLUDE);$(SPDLOG_INCLUDE);$(YAML_CPP_INCLUDE);$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_LIB);$(SPDLOG_LIB);$(YAML_CPP_LIB)\Debug;$(LibraryPath)</LibraryPath>
     <SourcePath>$(BOOST_INCLUDE);$(SPDLOG_INCLUDE);$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(BOOST_INCLUDE);$(SPDLOG_INCLUDE);$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_LIB);$(SPDLOG_LIB);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BOOST_INCLUDE);$(SPDLOG_INCLUDE);$(YAML_CPP_INCLUDE);$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_LIB);$(SPDLOG_LIB);$(YAML_CPP_LIB)\Release;$(LibraryPath)</LibraryPath>
     <SourcePath>$(BOOST_INCLUDE);$(SPDLOG_INCLUDE);$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -169,12 +169,13 @@
     <ClCompile Include="program_path_utils.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="random_utils.cpp" />
-    <ClCompile Include="system_event_log.cpp" />
+    <ClCompile Include="subscribe_system_event.cpp" />
     <ClCompile Include="system_com_utils.cpp" />
     <ClCompile Include="firewall_controller.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="block_address_status.h" />
+    <ClInclude Include="concurrent_queue.h" />
     <ClInclude Include="expires_map_utils.h" />
     <ClInclude Include="application_mutex.h" />
     <ClInclude Include="PECheckSum.h" />
@@ -186,9 +187,10 @@
     <ClInclude Include="boost_xml_utils.h" />
     <ClInclude Include="handle_wrapper.h" />
     <ClInclude Include="logger.h" />
-    <ClInclude Include="system_event_log.h" />
+    <ClInclude Include="subscribe_system_event.h" />
     <ClInclude Include="system_com_utils.h" />
     <ClInclude Include="firewall_controller.h" />
+    <ClInclude Include="yaml.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
