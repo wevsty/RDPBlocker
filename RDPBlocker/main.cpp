@@ -160,7 +160,7 @@ bool IsWhitelistAddress(const std::string& data)
     return false;
 }
 
-void ProcessRemoteAddresses(
+void ProcessRemoteAddressesLoginFailed(
     boost::asio::io_context& io_context,
     std::map<std::string, block_address_status>& address_count,
     const std::string& address
@@ -205,6 +205,48 @@ void ProcessRemoteAddresses(
     delete_expire_keys(address_count);
 }
 
+void ProcessRemoteAddressesLoginSucceed(
+    boost::asio::io_context& io_context,
+    std::map<std::string, block_address_status>& address_count,
+    const std::string& address
+)
+{
+    // 校验IP地址
+    if (IsIPAddress(address) == false)
+    {
+        g_logger->info("Invalid address : {}", address);
+        return;
+    }
+    if (IsWhitelistAddress(address) == true)
+    {
+        g_logger->info("Whitelist address : {}", address);
+        return;
+    }
+    auto find_iter = address_count.find(address);
+    if (find_iter == address_count.end())
+    {
+        block_address_status status;
+        status.set_count(1);
+        status.set_expire_interval(program_setting::block_time);
+        address_count[address] = status;
+        find_iter = address_count.find(address);
+    }
+    else
+    {
+        int n_count = find_iter->second.get_count() + 1;
+        find_iter->second.set_count(n_count);
+        find_iter->second.set_expire_interval(program_setting::block_time);
+    }
+    if (find_iter->second.is_blocked() == false)
+    {
+        g_logger->info("Block address : {}", address);
+        CreateBlockWorkPlan(io_context, address, program_setting::block_time);
+        find_iter->second.set_blocked_interval(program_setting::block_time);
+        find_iter->second.set_expire_interval(program_setting::block_time);
+    }
+    delete_expire_keys(address_count);
+}
+
 void ProcessRDPAuthFailedEvent(boost::asio::io_context* io_context_ptr)
 {
     boost::asio::io_context& io_context = *io_context_ptr;
@@ -230,9 +272,18 @@ void ProcessRDPAuthFailedEvent(boost::asio::io_context* io_context_ptr)
         if (address != "-")
         {
             g_logger->info("Address auth failed : {}", address);
-            ProcessRemoteAddresses(io_context, address_count, address);
+            ProcessRemoteAddressesLoginFailed(io_context, address_count, address);
         }
     }
+}
+
+std::string GetLocalHostname()
+{
+    DWORD buffer_size = MAX_COMPUTERNAME_LENGTH + 1;
+    std::shared_ptr<WCHAR[]> buffer = std::make_shared<WCHAR[]>(buffer_size);
+    GetComputerNameW(buffer.get(), &buffer_size);
+    std::string hostname = boost::locale::conv::utf_to_utf<char>(buffer.get());
+    return hostname;
 }
 
 void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
@@ -240,6 +291,7 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
     boost::asio::io_context& io_context = *io_context_ptr;
     std::map<std::string, block_address_status> address_count;
     std::map<std::string, std::string> workstation_name_map;
+    std::string local_hostname = GetLocalHostname();
     g_logger->info("Subscribe RDPAuthSucceedEvent.");
     RDPAuthSucceedEvent auth_succeed_evt;
     // 订阅RDP登录失败事件
@@ -259,6 +311,10 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
         std::string workstation_name = event_attr["WorkstationName"];
         std::string user_name = event_attr["TargetUserName"];
         std::string address = event_attr["IpAddress"];
+        if (local_hostname == workstation_name)
+        {
+            continue;
+        }
         if (workstation_name != "" && user_name != "" && address != "-")
         {
             auto it = workstation_name_map.find(user_name);
@@ -270,13 +326,13 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
             {
                 if (it->second == workstation_name)
                 {
+                    g_logger->info("Check workstation name succeed : {}", workstation_name);
                     continue;
                 }
                 else
                 {
                     g_logger->info("Check workstation name failed : {}", workstation_name);
-                    //g_logger->info("Block address : {}", address);
-                    ProcessRemoteAddresses(io_context, address_count, address);
+                    ProcessRemoteAddressesLoginSucceed(io_context, address_count, address);
                 }
             }
         }
