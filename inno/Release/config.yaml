@@ -1,11 +1,19 @@
+# Blocking Threshold
+# IP addresses will be blocked when an incorrect account or password is entered within a specified period of time greater than a threshold value.
 block_threshold: 3
-block_time: 300
+# Blocking time in the seconds.
+block_time: 600
+# Check client hostname when user logs in.
+# Block if it is different from the host name of the first login.
+# default: false
 check_workstation: false
 log:
   filename: logger.txt
   max_size: 1024000
   max_files: 3
   level: info
+# Addresses in the whitelist will not be subject to any restrictions.
+# Note that the expression is a regular expression.
 IP_whitelist:
   - 127\.0\.0\..*
   - 192\.168\..*
