@@ -12,8 +12,6 @@
 #include <boost/asio.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/program_options.hpp>
-//#include <boost/property_tree/ini_parser.hpp>
-//#include <boost/property_tree/ptree.hpp>
 #include <boost/thread.hpp>
 
 #include "yaml.h"

@@ -9,8 +9,6 @@
 
 #include <windows.h>
 
-#include "smart_ptr_utils.h"
-
 #define OS_MAX_PATH 32768
 
 // 获取程序自身路径

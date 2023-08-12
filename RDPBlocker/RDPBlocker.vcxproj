@@ -181,7 +181,6 @@
     <ClInclude Include="PECheckSum.h" />
     <ClInclude Include="program_path_utils.h" />
     <ClInclude Include="self_exit_code.h" />
-    <ClInclude Include="smart_ptr_utils.h" />
     <ClInclude Include="random_utils.h" />
     <ClInclude Include="boost_regex_utils.h" />
     <ClInclude Include="boost_xml_utils.h" />
