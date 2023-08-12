@@ -1,5 +1,5 @@
-#ifndef __STD_RANDOM_UTILS__
-#define __STD_RANDOM_UTILS__
+#ifndef __RANDOM_UTILS__
+#define __RANDOM_UTILS__
 
 #include <string>
 #include <random>

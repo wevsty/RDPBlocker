@@ -1,6 +1,10 @@
 #ifndef __APPLICATION_MUTEX__
 #define __APPLICATION_MUTEX__
 
+#if !defined(NOMINMAX)
+#define NOMINMAX 1
+#endif
+
 #include <string>
 #include <windows.h>
 

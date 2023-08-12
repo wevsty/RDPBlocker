@@ -25,7 +25,7 @@
 #include "PECheckSum.h"
 #include "program_path_utils.h"
 #include "self_exit_code.h"
-#include "std_random_utils.h"
+#include "random_utils.h"
 #include "system_com_utils.h"
 #include "system_event_log.h"
 

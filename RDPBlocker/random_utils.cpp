@@ -1,4 +1,4 @@
-#include "std_random_utils.h"
+#include "random_utils.h"
 
 std::string random_string(const unsigned int count, const std::string& chars_table)
 {

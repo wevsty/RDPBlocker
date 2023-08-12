@@ -3,6 +3,10 @@
 
 #include <string>
 
+#if !defined(NOMINMAX)
+#define NOMINMAX 1
+#endif
+
 #include <windows.h>
 #include <netfw.h>
 #include <atlcomcli.h>
