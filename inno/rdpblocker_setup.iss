@@ -31,7 +31,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl";
 
 [Files]
 Source: ".\Release\RDPBlocker.exe"; DestDir: "{app}"; Flags: ignoreversion;BeforeInstall: ServiceStop('{#MyAppName}')
-Source: ".\Release\config.ini"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\Release\config.yaml"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\Release\nssm.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\Release\start.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\Release\stop.bat"; DestDir: "{app}"; Flags: ignoreversion
