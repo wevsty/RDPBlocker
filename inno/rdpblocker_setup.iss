@@ -50,7 +50,7 @@ Filename: "{app}\nssm.exe"; Parameters: "remove {#MyAppName} confirm"; Flags: ru
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{group}\config.ini"; Filename: "{app}\config.ini"
+Name: "{group}\config.yaml"; Filename: "{app}\config.yaml"
 Name: "{group}\start.bat"; Filename: "{app}\start.bat"
 Name: "{group}\stop.bat"; Filename: "{app}\stop.bat"
 Name: "{group}\restart.bat"; Filename: "{app}\restart.bat"
