@@ -31,43 +31,40 @@ Windows 10 x64 或 Windows Server 2016 x64 以及更高版本。
 
 注：注册服务功能由 [nssm project](https://nssm.cc/) 提供.
 
-```C:\Program Files\RDPBlocker\config.ini```  是配置文件。
+```C:\Program Files\RDPBlocker\config.yaml```  是配置文件。
 
 配置文件可以根据用户的需要进行修改。
 
 举例:
 
-```ini
-[Log]
-; 日志文件的文件名
-filename = logger.txt
-; 日志文件的最大大小为10MB
-max_size = 10485760
-; 日志文件的最大数量
-max_files = 3
-; 日志输出等级
-; 值可为:
-; trace debug info warning error critical off
-level = info
-
-[Block]
-; 阻挡阈值
-; 当在指定的时间内输入错误的账户或密码超过阈值时，IP地址将被封锁。
-threshold = 3
-; 以秒为单位的阻挡时间
-time = 300
-
-[Whitelist]
-; 位于 Whitelist 中的地址将不会受到限制
-; 语法为 : key = 正则表达式
-; 注意 : key 不能重复
-001 = 127\.0\.0\.1
-; 192.168.0.0-192.168.255.255
-002 = ^192\.168.*
-; 172.16.0.0-172.31.255.255
-003 = ^172\.(1[6-9]|2[0-9]|3[0-1])\..*
-; 10.0.0.0-10.255.255.255
-004 = ^10\..*
+```yaml
+# Blocking Threshold
+# IP addresses will be blocked when an incorrect account or password is entered within a specified period of time greater than a threshold value.
+block_threshold: 3
+# Blocking time in the seconds.
+block_time: 600
+# Check client hostname when user logs in.
+# Block if it is different from the host name of the first login.
+# default: false
+check_workstation: false
+log:
+  # Log filename
+  filename: logger.txt
+  # Max log file size 10485760=10MB
+  max_size: 10485760
+  # Max log files
+  max_files: 3
+  # Log output level
+  # The value can be:
+  # trace debug info warning error critical off
+  level: info
+# Addresses in the whitelist will not be subject to any restrictions.
+# Note that the expression is a regular expression.
+IP_whitelist:
+  - 127\.0\.0\..*
+  - ^192\.168.*
+  - ^172\.(1[6-9]|2[0-9]|3[0-1])\..*
+  - ^10\..*
 ```
 
 如果有需要，也可以下载压缩包自行配置安装。
@@ -78,18 +75,22 @@ time = 300
 
 
 ### 构建要求
-Visual Studio 2019 (MSVC 14.2)
+Visual Studio 2022 (MSVC 14.3)
 
 Boost Library https://www.boost.org
 
 spdlog https://github.com/gabime/spdlog
 
+yaml-cpp https://github.com/jbeder/yaml-cpp
+
 如果使用本项目提供的工程文件，需要在编译前设置环境变量。
 ```
 $(BOOST_INCLUDE)
 $(SPDLOG_INCLUDE)
+$(YAML_CPP_INCLUDE)
 $(BOOST_LIB)
 $(SPDLOG_LIB)
+$(YAML_CPP_LIB)
 ```
 
 如果你需要编译和安装向导，你还需要 Inno setup 编译器。
