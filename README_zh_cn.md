@@ -43,10 +43,19 @@ Windows 10 x64 或 Windows Server 2016 x64 以及更高版本。
 block_threshold: 3
 # Blocking time in the seconds.
 block_time: 600
-# Check client hostname when user logs in.
-# Block if it is different from the host name of the first login.
-# default: false
-check_workstation: false
+workstation_name:
+  # Check client workstation name when user logs in.
+  # Block if it is different from the workstation name of the first login.
+  # default: false
+  check: false
+  # Pre-bind workstation name
+  user_bind:
+    # Format
+    # {UserName}: {WorkstationName}
+    root: DESKTOP-0000000
+  # Workstation name whitelist
+  whitelist:
+    - DESKTOP-0000000
 log:
   # Log filename
   filename: logger.txt
