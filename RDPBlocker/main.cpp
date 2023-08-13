@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <algorithm>
+#include <set>
 // Set Windows SDK Version
 #include <SDKDDKVer.h>
 
@@ -33,7 +33,7 @@
 namespace program_setting {
     // 固定常量
     const std::string app_mutex_name = "RDPBlocker_mutex";
-    const std::string program_version = "1.2.1.0";
+    const std::string program_version = "1.2.2.0";
     const std::string rule_prefix = "AUTO_BLOCKED_";
 
     // 配置文件路径
@@ -51,7 +51,7 @@ namespace program_setting {
     // 用户绑定主机名
     std::map<std::string, std::string> user_bind_workstation_name;
     // 主机名白名单
-    std::vector<std::string> workstation_name_whitelist;
+    std::set<std::string> workstation_name_whitelist;
     // IP白名单列表
     std::vector<boost::regex> ip_whitelist;
 }
@@ -331,11 +331,7 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
             continue;
         }
         // 检查工作站名白名单
-        auto it = std::find(
-            program_setting::workstation_name_whitelist.begin(),
-            program_setting::workstation_name_whitelist.end(),
-            workstation_name
-        );
+        auto it = program_setting::workstation_name_whitelist.find(workstation_name);
         if (it != program_setting::workstation_name_whitelist.end())
         {
             // 说明在白名单内
@@ -348,6 +344,7 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
             auto it = workstation_name_table.find(user_name);
             if (it == workstation_name_table.end())
             {
+                g_logger->info("First login WorkstationName : {}", workstation_name);
                 workstation_name_table[user_name] = workstation_name;
             }
             else
@@ -355,6 +352,7 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
                 g_logger->info("Check WorkstationName : {}", workstation_name);
                 if (it->second == workstation_name)
                 {
+                    g_logger->info("Allow WorkstationName : {}", workstation_name);
                     continue;
                 }
                 else
@@ -399,7 +397,7 @@ bool load_config_file(const std::string& file_path)
         const YAML::Node& node_workstation_name_whitelist = node_workstation_name["whitelist"];
         for (unsigned i = 0; i < node_workstation_name_whitelist.size(); i++) {
             std::string workstation_name = node_workstation_name_whitelist[i].as<std::string>();
-            program_setting::workstation_name_whitelist.push_back(workstation_name);
+            program_setting::workstation_name_whitelist.insert(workstation_name);
         }
         
 
