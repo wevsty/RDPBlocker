@@ -33,7 +33,7 @@
 namespace program_setting {
     // 固定常量
     const std::string app_mutex_name = "RDPBlocker_mutex";
-    const std::string program_version = "1.2.2.0";
+    const std::string program_version = "1.2.2.1";
     const std::string rule_prefix = "AUTO_BLOCKED_";
 
     // 配置文件路径
@@ -325,6 +325,10 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
         std::string workstation_name = event_attr["WorkstationName"];
         std::string user_name = event_attr["TargetUserName"];
         std::string address = event_attr["IpAddress"];
+        if (workstation_name.empty() == true || user_name.empty() == true)
+        {
+            continue;
+        }
         // 如果登录名为本机则跳过处理
         if (local_hostname == workstation_name)
         {
@@ -335,29 +339,29 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
         if (it != program_setting::workstation_name_whitelist.end())
         {
             // 说明在白名单内
-            g_logger->info("Whitelist WorkstationName : {}", workstation_name);
+            g_logger->info("Whitelist login {} : {}", user_name, workstation_name);
             continue;
         }
         // 进行绑定检查
-        if (workstation_name != "" && user_name != "" && address != "-")
+        if (address != "-")
         {
             auto it = workstation_name_table.find(user_name);
             if (it == workstation_name_table.end())
             {
-                g_logger->info("First login WorkstationName : {}", workstation_name);
+                g_logger->info("First login {} : {}", user_name, workstation_name);
                 workstation_name_table[user_name] = workstation_name;
             }
             else
             {
-                g_logger->info("Check WorkstationName : {}", workstation_name);
+                g_logger->info("Check login {} : {}", user_name, workstation_name);
                 if (it->second == workstation_name)
                 {
-                    g_logger->info("Allow WorkstationName : {}", workstation_name);
+                    g_logger->info("Allow login {} : {}", user_name, workstation_name);
                     continue;
                 }
                 else
                 {
-                    g_logger->info("Block WorkstationName : {}", workstation_name);
+                    g_logger->info("Block login {} : {}", user_name, workstation_name);
                     ProcessRemoteAddressesLoginSucceed(io_context, address_count, address);
                 }
             }
