@@ -33,7 +33,7 @@
 namespace program_setting {
     // 固定常量
     const std::string app_mutex_name = "RDPBlocker_mutex";
-    const std::string program_version = "1.2.2.1";
+    const std::string program_version = "1.2.3.0";
     const std::string rule_prefix = "AUTO_BLOCKED_";
 
     // 配置文件路径
@@ -267,7 +267,7 @@ void ProcessRDPAuthFailedEvent(boost::asio::io_context* io_context_ptr)
     }
     while (true)
     {
-        g_logger->debug("Wait event.");
+        g_logger->debug("Wait RDPAuthFailedEvent.");
         std::string event_xml_data;
         auth_failed_evt.Pop(event_xml_data);
 
@@ -316,7 +316,7 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
     }
     while (true)
     {
-        g_logger->debug("Wait event.");
+        g_logger->debug("Wait RDPAuthSucceedEvent event.");
         std::string event_xml_data;
         auth_succeed_evt.Pop(event_xml_data);
 
@@ -379,9 +379,6 @@ bool load_config_file(const std::string& file_path)
 
         // 日志配置
         const YAML::Node& node_logs = config["log"];
-        program_setting::logger_setting.filename = node_logs["filename"].as<std::string>();
-        program_setting::logger_setting.max_size = node_logs["max_size"].as<int>();
-        program_setting::logger_setting.max_files = node_logs["max_files"].as<int>();
         std::string output_level = node_logs["level"].as<std::string>();
         program_setting::logger_setting.set_level_string(output_level);
 
@@ -479,6 +476,34 @@ void prase_argv(int argc, char* argv[])
         std::cout << "Parsing command line error" << std::endl;
         std::cout << err.what() << std::endl;
         std::exit(EXIT_CODE::COMMAND_PARSE_ERROR);
+    }
+}
+
+void init_global_logger(const logger_options& options)
+{
+    try
+    {
+        // 控制台输出
+        auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+
+        // spdlog::logger logger("global_logger", { console_sink, rotating_sink });
+        auto logger_ptr = std::make_shared<spdlog::logger>(
+            spdlog::logger("global_logger", { console_sink })
+        );
+
+        logger_ptr->set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v");
+        logger_ptr->set_level(options.level);
+        spdlog::set_default_logger(logger_ptr);
+        spdlog::flush_on(spdlog::level::info);
+        // 每隔10秒自动刷新日志
+        spdlog::flush_every(std::chrono::seconds(10));
+
+        g_logger = logger_ptr;
+    }
+    catch (const spdlog::spdlog_ex& err)
+    {
+        std::cout << "Loger init failed: " << err.what() << std::endl;
+        std::exit(EXIT_CODE::INIT_LOGGER_ERROR);
     }
 }
 

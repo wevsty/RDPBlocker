@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "RDPBlocker"
-#define MyAppVersion "1.2.2.1"
+#define MyAppVersion "1.2.3.0"
 #define MyAppURL "https://github.com/wevsty/RDPBlocker"
 #define MyAppExeName "RDPBlocker.exe"
 
@@ -22,31 +22,31 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 LicenseFile=.\Release\LICENSE
 OutputBaseFilename=rdpblocker_setup
-Compression=lzma
+Compression=lzma2
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64
 
 [Languages]
-Name: "english"; MessagesFile: "compiler:Default.isl";
+Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 Source: ".\Release\RDPBlocker.exe"; DestDir: "{app}"; Flags: ignoreversion;BeforeInstall: ServiceStop('{#MyAppName}')
 Source: ".\Release\config.yaml"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\Release\nssm.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\Release\RDPBlocker_service.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\Release\RDPBlocker_service.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\Release\start.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\Release\stop.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\Release\restart.bat"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Run]
-Filename: {app}\nssm.exe; Parameters: "stop {#MyAppName}" ; Flags: runhidden
-Filename: {app}\nssm.exe; Parameters: "install {#MyAppName} ""{app}\{#MyAppExeName}""" ; Flags: runhidden
-Filename: {app}\nssm.exe; Parameters: "start {#MyAppName}" ; Flags: runhidden
-;Filename: "{cmd}"; Parameters: "sc create RDPBlocker start= auto DisplayName= RDPBlocker binPath= ""{app}\RDPBlocker.exe"""; Flags: runhidden
+Filename: {app}\RDPBlocker_service.exe; Parameters: "stop RDPBlocker_service.xml" ; Flags: runhidden
+Filename: {app}\RDPBlocker_service.exe; Parameters: "install RDPBlocker_service.xml"; Flags: runhidden
+Filename: {app}\RDPBlocker_service.exe; Parameters: "start RDPBlocker_service.xml" ; Flags: runhidden
 
 [UninstallRun]
-Filename: "{app}\nssm.exe"; Parameters: "stop {#MyAppName}"; Flags: runhidden waituntilterminated; RunOnceId: "StopServices"
-Filename: "{app}\nssm.exe"; Parameters: "remove {#MyAppName} confirm"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveServices"
+Filename: "{app}\RDPBlocker_service.exe"; Parameters: "stop RDPBlocker_service.xml"; Flags: runhidden waituntilterminated; RunOnceId: "StopService"
+Filename: "{app}\RDPBlocker_service.exe"; Parameters: "uninstall RDPBlocker_service.xml"; Flags: runhidden waituntilterminated; RunOnceId: "UninstallService"
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -61,12 +61,14 @@ UseRelativePaths=True
 
 [UninstallDelete]
 Type: files; Name: "{app}\*.*"
+Type: files; Name: "{app}\logs\*.*"
+Type: filesandordirs; Name: "{app}\logs"
+Type: filesandordirs; Name: "{app}"
 
 [Code]
 procedure ServiceStop(SvcName: String);
 var
   ResultCode: Integer;
 begin
-    // Exec('sc.exe', 'stop ' + SvcName , '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
     Exec('net.exe', 'stop ' + SvcName , '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 end;

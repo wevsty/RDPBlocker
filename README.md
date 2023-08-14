@@ -29,7 +29,7 @@ The program will be installed by default in the ```C:\Program Files\RDPBlocker``
 
 ```C:\Program Files\RDPBlocker\RDPBlocker.exe``` will be registered as a system service, and as a system service it will start automatically at system startup.
 
-Note: Registration service function provided by [nssm project](https://nssm.cc/).
+Note: Registration service function provided by [WinSW project](https://github.com/winsw/winsw).
 
 ```C:\Program Files\RDPBlocker\config.yaml```  is the configuration file.
 The configuration file can be changed according to the user's needs.
@@ -55,12 +55,6 @@ workstation_name:
   whitelist:
     - DESKTOP-0000000
 log:
-  # Log filename
-  filename: logger.txt
-  # Max log file size 10485760=10MB
-  max_size: 10485760
-  # Max log files
-  max_files: 3
   # Log output level
   # The value can be:
   # trace debug info warning error critical off

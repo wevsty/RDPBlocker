@@ -29,7 +29,7 @@ Windows 10 x64 或 Windows Server 2016 x64 以及更高版本。
 
 ```C:\Program Files\RDPBlocker\RDPBlocker.exe``` 将被注册为系统服务，作为系统服务，它将在系统启动时自动启动。
 
-注：注册服务功能由 [nssm project](https://nssm.cc/) 提供.
+注：注册服务功能由 [WinSW project](https://github.com/winsw/winsw) 提供.
 
 ```C:\Program Files\RDPBlocker\config.yaml```  是配置文件。
 
@@ -57,12 +57,6 @@ workstation_name:
   whitelist:
     - DESKTOP-0000000
 log:
-  # Log filename
-  filename: logger.txt
-  # Max log file size 10485760=10MB
-  max_size: 10485760
-  # Max log files
-  max_files: 3
   # Log output level
   # The value can be:
   # trace debug info warning error critical off

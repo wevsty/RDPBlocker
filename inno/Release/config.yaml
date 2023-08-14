@@ -17,12 +17,6 @@ workstation_name:
   whitelist:
     - DESKTOP-0000000
 log:
-  # Log filename
-  filename: logger.txt
-  # Max log file size 10485760=10MB
-  max_size: 10485760
-  # Max log files
-  max_files: 3
   # Log output level
   # The value can be:
   # trace debug info warning error critical off
