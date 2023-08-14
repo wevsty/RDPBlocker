@@ -316,7 +316,7 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
     }
     while (true)
     {
-        g_logger->debug("Wait RDPAuthSucceedEvent event.");
+        g_logger->debug("Wait RDPAuthSucceedEvent.");
         std::string event_xml_data;
         auth_succeed_evt.Pop(event_xml_data);
 
