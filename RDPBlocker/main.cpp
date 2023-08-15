@@ -33,25 +33,29 @@
 namespace program_setting {
     // 固定常量
     const std::string app_mutex_name = "RDPBlocker_mutex";
-    const std::string program_version = "1.2.3.0";
+    const std::string program_version = "1.2.4.0";
     const std::string rule_prefix = "AUTO_BLOCKED_";
 
     // 配置文件路径
     std::string config_file_path;
 
-    // log 配置
-    logger_options logger_setting;
-
     // 阻挡阈值
     int block_threshold;
     // 阻挡时间
     int block_time;
+
+    // log 配置
+    logger_options logger_setting;
+
     // 检查主机名
     bool check_workstation_name;
     // 用户绑定主机名
     std::map<std::string, std::string> user_bind_workstation_name;
+    // 主机名阻挡名单
+    std::set<std::string> workstation_name_blocklist;
     // 主机名白名单
     std::set<std::string> workstation_name_whitelist;
+
     // IP白名单列表
     std::vector<boost::regex> ip_whitelist;
 }
@@ -273,12 +277,14 @@ void ProcessRDPAuthFailedEvent(boost::asio::io_context* io_context_ptr)
 
         std::map<std::string, std::string> event_attr;
         EventDataToMap(event_xml_data, event_attr);
-        std::string address = event_attr["IpAddress"];
-        if (address != "-")
+        std::string remote_ip_address = event_attr["IpAddress"];
+        // 如果IP为空则直接跳过
+        if (remote_ip_address == "-" || remote_ip_address.empty() == true)
         {
-            g_logger->info("Address auth failed : {}", address);
-            ProcessRemoteAddressesLoginFailed(io_context, address_count, address);
+            continue;
         }
+        g_logger->info("Address auth failed : {}", remote_ip_address);
+        ProcessRemoteAddressesLoginFailed(io_context, address_count, remote_ip_address);
     }
 }
 
@@ -324,46 +330,47 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
         EventDataToMap(event_xml_data, event_attr);
         std::string workstation_name = event_attr["WorkstationName"];
         std::string user_name = event_attr["TargetUserName"];
-        std::string address = event_attr["IpAddress"];
-        if (workstation_name.empty() == true || user_name.empty() == true)
-        {
-            continue;
-        }
-        // 如果登录名为本机则跳过处理
-        if (local_hostname == workstation_name)
+        std::string remote_ip_address = event_attr["IpAddress"];
+        // 如果IP为空则直接跳过
+        if (remote_ip_address == "-" || remote_ip_address.empty() == true)
         {
             continue;
         }
         // 检查工作站名白名单
-        auto it = program_setting::workstation_name_whitelist.find(workstation_name);
-        if (it != program_setting::workstation_name_whitelist.end())
+        auto whiltelist_it = program_setting::workstation_name_whitelist.find(workstation_name);
+        if (whiltelist_it != program_setting::workstation_name_whitelist.end())
         {
             // 说明在白名单内
             g_logger->info("Whitelist login {} : {}", user_name, workstation_name);
             continue;
         }
-        // 进行绑定检查
-        if (address != "-")
+        // 检查工作站名阻挡名单
+        auto blocklist_it = program_setting::workstation_name_blocklist.find(workstation_name);
+        if (blocklist_it != program_setting::workstation_name_blocklist.end())
         {
-            auto it = workstation_name_table.find(user_name);
-            if (it == workstation_name_table.end())
+            // 说明在阻挡名单内
+            g_logger->info("Blocklist login {} : {}", user_name, workstation_name);
+            continue;
+        }
+        // 进行绑定检查
+        auto table_it = workstation_name_table.find(user_name);
+        if (table_it == workstation_name_table.end())
+        {
+            g_logger->info("First login {} : {}", user_name, workstation_name);
+            workstation_name_table[user_name] = workstation_name;
+        }
+        else
+        {
+            g_logger->info("Check login {} : {}", user_name, workstation_name);
+            if (table_it->second == workstation_name)
             {
-                g_logger->info("First login {} : {}", user_name, workstation_name);
-                workstation_name_table[user_name] = workstation_name;
+                g_logger->info("Allow login {} : {}", user_name, workstation_name);
+                continue;
             }
             else
             {
-                g_logger->info("Check login {} : {}", user_name, workstation_name);
-                if (it->second == workstation_name)
-                {
-                    g_logger->info("Allow login {} : {}", user_name, workstation_name);
-                    continue;
-                }
-                else
-                {
-                    g_logger->info("Block login {} : {}", user_name, workstation_name);
-                    ProcessRemoteAddressesLoginSucceed(io_context, address_count, address);
-                }
+                g_logger->info("Block login {} : {}", user_name, workstation_name);
+                ProcessRemoteAddressesLoginSucceed(io_context, address_count, remote_ip_address);
             }
         }
     }
@@ -395,15 +402,22 @@ bool load_config_file(const std::string& file_path)
             std::string bind_name = it->second.as<std::string>();
             program_setting::user_bind_workstation_name[user_name] = bind_name;
         }
+        // 主机名阻挡名单
+        const YAML::Node& node_workstation_name_blocklist = node_workstation_name["blocklist"];
+        for (unsigned i = 0; i < node_workstation_name_blocklist.size(); i++) {
+            std::string workstation_name = node_workstation_name_blocklist[i].as<std::string>();
+            program_setting::workstation_name_blocklist.insert(workstation_name);
+        }
+        // 主机名白名单
         const YAML::Node& node_workstation_name_whitelist = node_workstation_name["whitelist"];
         for (unsigned i = 0; i < node_workstation_name_whitelist.size(); i++) {
             std::string workstation_name = node_workstation_name_whitelist[i].as<std::string>();
             program_setting::workstation_name_whitelist.insert(workstation_name);
         }
-        
 
         // IP白名单配置
-        const YAML::Node& node_ip_whiltelist = config["IP_whitelist"];
+        const YAML::Node& node_ip_address = config["IP_Address"];
+        const YAML::Node& node_ip_whiltelist = node_ip_address["whitelist"];
         for (unsigned i = 0; i < node_ip_whiltelist.size(); i++) {
             std::string regex_string = node_ip_whiltelist[i].as<std::string>();
             boost::regex regex_obj(regex_string);

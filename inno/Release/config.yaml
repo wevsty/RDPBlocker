@@ -13,6 +13,11 @@ workstation_name:
     # Format
     # {UserName}: {WorkstationName}
     root: DESKTOP-0000000
+  # Workstation name blocklist
+  # Some third-party RDP clients do not send the workstation name to the server.
+  # You can block third-party RDP client logins through such features.
+  blocklist:
+    - "-"
   # Workstation name whitelist
   whitelist:
     - DESKTOP-0000000
@@ -21,10 +26,11 @@ log:
   # The value can be:
   # trace debug info warning error critical off
   level: info
-# Addresses in the whitelist will not be subject to any restrictions.
-# Note that the expression is a regular expression.
-IP_whitelist:
-  - 127\.0\.0\..*
-  - ^192\.168.*
-  - ^172\.(1[6-9]|2[0-9]|3[0-1])\..*
-  - ^10\..*
+IP_Address:
+  # Addresses in the whitelist will not be subject to any restrictions.
+  # Note that the expression is a regular expression.
+  whitelist:
+    - 127\.0\.0\..*
+    - ^192\.168.*
+    - ^172\.(1[6-9]|2[0-9]|3[0-1])\..*
+    - ^10\..*
