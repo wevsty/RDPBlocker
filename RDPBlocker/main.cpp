@@ -32,7 +32,7 @@
 namespace program_setting {
 	// 固定常量
 	const std::string app_mutex_name = "RDPBlocker_mutex";
-	const std::string program_version = "1.2.5.0";
+	const std::string program_version = "1.2.5.1";
 	const std::string rule_prefix = "AUTO_BLOCKED_";
 
 	// 配置文件路径
@@ -291,6 +291,9 @@ void ProcessRDPAuthFailedEvent(boost::asio::io_context* io_context_ptr)
 		std::string event_xml_data;
 		auth_failed_evt.Pop(event_xml_data);
 
+		// 删除过期的记录
+		delete_expire_remote_address(remote_address_map);
+
 		std::map<std::string, std::string> event_attr;
 		EventDataToMap(event_xml_data, event_attr);
 		std::string remote_ip_address = event_attr["IpAddress"];
@@ -300,7 +303,6 @@ void ProcessRDPAuthFailedEvent(boost::asio::io_context* io_context_ptr)
 			continue;
 		}
 		g_logger->info("Auth failed : {}", remote_ip_address);
-		delete_expire_remote_address(remote_address_map);
 		ProcessRemoteAddressesLoginFailed(io_context, remote_address_map, remote_ip_address);
 	}
 }
@@ -343,6 +345,9 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
 		g_logger->debug("Wait RDPAuthSucceedEvent.");
 		std::string event_xml_data;
 		auth_succeed_evt.Pop(event_xml_data);
+
+		// 删除过期的记录
+		delete_expire_remote_address(remote_address_map);
 
 		std::map<std::string, std::string> event_attr;
 		EventDataToMap(event_xml_data, event_attr);
