@@ -7,7 +7,6 @@
 #include <vector>
 #include <fstream>
 #include <set>
-#include <queue>
 // Set Windows SDK Version
 #include <SDKDDKVer.h>
 
