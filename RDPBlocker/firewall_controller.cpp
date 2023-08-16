@@ -313,6 +313,7 @@ namespace firewall_controller {
                     std::string string_rule_name = ConvertSystemStringToStdString(rule_name.m_str);
                     if (regex_find_match(find_expr, string_rule_name) == true)
                     {
+                        g_logger->debug("Remove rule: ", string_rule_name);
                         vt_wait_delete.push_back(rule_name);
                     }
                 }

@@ -17,6 +17,22 @@ DWORD __stdcall SubscribeSystemEventBase::SubscriptionCallback(EVT_SUBSCRIBE_NOT
     assert(ptr != NULL);
     switch (action)
     {
+    case EvtSubscribeActionError:
+    {
+        DWORD dwStatus = PtrToUlong(hEvent);
+        if (ERROR_EVT_QUERY_RESULT_STALE == dwStatus)
+        {
+            // wprintf(L"The subscription callback was notified that event records are missing.\n");
+            // Handle if this is an issue for your application.
+            g_logger->info("SubscriptionCallback: event records are missing.");
+        }
+        else
+        {
+            // wprintf(L"The subscription callback received the following Win32 error: %lu\n", (DWORD)hEvent);
+            g_logger->error("SubscriptionCallback: Win32 error 0x{0:x}", dwStatus);
+        }
+        break;
+    }
     case EvtSubscribeActionDeliver:
     {
         std::wstring event_data;

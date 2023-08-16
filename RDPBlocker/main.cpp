@@ -33,7 +33,7 @@
 namespace program_setting {
     // 固定常量
     const std::string app_mutex_name = "RDPBlocker_mutex";
-    const std::string program_version = "1.2.4.0";
+    const std::string program_version = "1.2.4.1";
     const std::string rule_prefix = "AUTO_BLOCKED_";
 
     // 配置文件路径
@@ -283,7 +283,7 @@ void ProcessRDPAuthFailedEvent(boost::asio::io_context* io_context_ptr)
         {
             continue;
         }
-        g_logger->info("Address auth failed : {}", remote_ip_address);
+        g_logger->info("Auth failed : {}", remote_ip_address);
         ProcessRemoteAddressesLoginFailed(io_context, address_count, remote_ip_address);
     }
 }
