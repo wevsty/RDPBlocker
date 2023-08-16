@@ -160,7 +160,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="block_address_status.cpp" />
     <ClCompile Include="boost_regex_utils.cpp" />
     <ClCompile Include="boost_xml_utils.cpp" />
     <ClCompile Include="logger.cpp" />
@@ -169,17 +168,18 @@
     <ClCompile Include="program_path_utils.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="random_utils.cpp" />
+    <ClCompile Include="remote_address_status.cpp" />
     <ClCompile Include="subscribe_system_event.cpp" />
     <ClCompile Include="system_com_utils.cpp" />
     <ClCompile Include="firewall_controller.cpp" />
+    <ClCompile Include="timer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="block_address_status.h" />
     <ClInclude Include="concurrent_queue.h" />
-    <ClInclude Include="expires_map_utils.h" />
     <ClInclude Include="application_mutex.h" />
     <ClInclude Include="PECheckSum.h" />
     <ClInclude Include="program_path_utils.h" />
+    <ClInclude Include="remote_address_status.h" />
     <ClInclude Include="self_exit_code.h" />
     <ClInclude Include="random_utils.h" />
     <ClInclude Include="boost_regex_utils.h" />
@@ -189,6 +189,7 @@
     <ClInclude Include="subscribe_system_event.h" />
     <ClInclude Include="system_com_utils.h" />
     <ClInclude Include="firewall_controller.h" />
+    <ClInclude Include="timer.h" />
     <ClInclude Include="yaml.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
