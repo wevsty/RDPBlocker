@@ -32,7 +32,7 @@
 namespace program_setting {
 	// 固定常量
 	const std::string app_mutex_name = "RDPBlocker_mutex";
-	const std::string program_version = "1.2.5.2";
+	const std::string program_version = "1.2.5.3";
 	const std::string rule_prefix = "AUTO_BLOCKED_";
 
 	// 配置文件路径
@@ -212,6 +212,10 @@ void ProcessRemoteAddressesLoginFailed(
 		{
 			g_logger->debug("Blocked address : {}", remote_address);
 		}
+	}
+	else
+	{
+		find_iter->second.reset_expired_timer();
 	}
 }
 
