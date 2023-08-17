@@ -25,7 +25,7 @@ void RemoteAddressStatus::reset_expired_timer()
 
 bool RemoteAddressStatus::is_expired(const std::time_t value) const
 {
-	return m_expire_timer.is_timeout(value);;
+	return m_expire_timer.is_timeout(value);
 }
 
 bool RemoteAddressStatus::get_block_flag() const

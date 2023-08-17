@@ -32,7 +32,7 @@
 namespace program_setting {
 	// 固定常量
 	const std::string app_mutex_name = "RDPBlocker_mutex";
-	const std::string program_version = "1.2.5.1";
+	const std::string program_version = "1.2.5.2";
 	const std::string rule_prefix = "AUTO_BLOCKED_";
 
 	// 配置文件路径
@@ -297,6 +297,7 @@ void ProcessRDPAuthFailedEvent(boost::asio::io_context* io_context_ptr)
 		std::map<std::string, std::string> event_attr;
 		EventDataToMap(event_xml_data, event_attr);
 		std::string remote_ip_address = event_attr["IpAddress"];
+
 		// 如果IP为空则直接跳过
 		if (remote_ip_address == "-" || remote_ip_address.empty() == true)
 		{

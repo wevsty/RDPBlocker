@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "RDPBlocker"
-#define MyAppVersion "1.2.5.1"
+#define MyAppVersion "1.2.5.2"
 #define MyAppURL "https://github.com/wevsty/RDPBlocker"
 #define MyAppExeName "RDPBlocker.exe"
 

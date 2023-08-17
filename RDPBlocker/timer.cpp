@@ -15,7 +15,7 @@ void Timer::initialize()
 
 std::time_t Timer::elapsed() const
 {
-	return std::time_t(0) - m_time;
+	return std::time(0) - m_time;
 }
 
 bool Timer::is_timeout(const std::time_t value) const
