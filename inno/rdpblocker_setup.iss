@@ -1,7 +1,7 @@
 #define ProjectName "RDPBlocker"
 #define ServiceWrapperAppName "RDPBlocker_service.exe"
 #define ServiceWrapperConfigName "RDPBlocker_service.xml"
-#define ReleaseVersion "1.2.5.4"
+#define ReleaseVersion "1.2.5.5"
 #define ProjectURL "https://github.com/wevsty/RDPBlocker"
 #define GUID "B476FB3F-F5A2-4F34-A0A6-E74EA3962FAD"
 
@@ -45,6 +45,12 @@ UseRelativePaths=True
 Type: filesandordirs; Name: "{app}"
 
 [Code]
+var
+    SecurityConfigPage: TWizardPage;
+    ChkForceSecurityLayer: TCheckBox;
+    ChkMinEncryptionLevel: TCheckBox;
+    ChkMinTLSVersion: TCheckBox;
+
 // 服务管理器命令
 function ServiceWrapperCommand(Command: String): Boolean;
 var
@@ -58,31 +64,111 @@ begin
     begin
         Exec(WrapperPath, Command, '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
     end;
+    Result:= true;
 end;
 
-// 安装向导初始化
-function InitializeSetup(): Boolean;
+// 获取卸载程序路径
+function GetUninstallerPath(): String;
+var
+    UninstallRegisterPath: String;
+begin
+    Result := '';
+    UninstallRegisterPath := 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{{#GUID}}_is1';
+    if RegQueryStringValue(HKLM, UninstallRegisterPath, 'UninstallString', Result) then
+    begin
+        Result := RemoveQuotes(Result);
+    end;
+end;
+
+// 卸载旧版本
+function UninstallOldVersion(): Boolean;
 var
     ResultCode: Integer;
-    uicmd: String;
+    UninstallPath: String;
 begin
-    Result:= false
-    if RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{{#GUID}}_is1', 'UninstallString', uicmd) then
+    Result := false;
+    UninstallPath := GetUninstallerPath();
+    if UninstallPath <> '' then
     begin
-    Exec(RemoveQuotes(uicmd), '', '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
+        Exec(RemoveQuotes(UninstallPath), '', '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
     end;
     Result:= true;
 end;
 
+// 安全配置页面
+procedure CreateSecurityConfigPage();
+begin
+    SecurityConfigPage := CreateCustomPage(
+    wpInfoBefore,
+    'RDPService Security Config',
+    'Configure security options'
+    );     
+    ChkForceSecurityLayer := TCheckBox.Create(SecurityConfigPage);
+    ChkForceSecurityLayer.Left := ScaleX(40);
+    ChkForceSecurityLayer.Top := ScaleY(40);
+    ChkForceSecurityLayer.Width := SecurityConfigPage.SurfaceWidth;
+    ChkForceSecurityLayer.Height := ScaleY(20);
+    ChkForceSecurityLayer.Caption := 'ForceSecurityLayer';
+    ChkForceSecurityLayer.Parent := SecurityConfigPage.Surface;
+    ChkForceSecurityLayer.Enabled := true;
+    ChkForceSecurityLayer.Checked := true;
+
+    ChkMinEncryptionLevel := TCheckBox.Create(SecurityConfigPage);
+    ChkMinEncryptionLevel.Left := ScaleX(40);
+    ChkMinEncryptionLevel.Top := ChkForceSecurityLayer.Top + ScaleY(40);
+    ChkMinEncryptionLevel.Width := SecurityConfigPage.SurfaceWidth;
+    ChkMinEncryptionLevel.Height := ScaleY(20);
+    ChkMinEncryptionLevel.Caption := 'SetMinEncryptionLevel';
+    ChkMinEncryptionLevel.Parent := SecurityConfigPage.Surface;
+    ChkMinEncryptionLevel.Enabled := true;
+    ChkMinEncryptionLevel.Checked := true;
+
+    ChkMinTLSVersion := TCheckBox.Create(SecurityConfigPage);
+    ChkMinTLSVersion.Left := ScaleX(40);
+    ChkMinTLSVersion.Top := ChkMinEncryptionLevel.Top + ScaleY(40);
+    ChkMinTLSVersion.Width := SecurityConfigPage.SurfaceWidth;
+    ChkMinTLSVersion.Height := ScaleY(20);
+    ChkMinTLSVersion.Caption := 'SetMinTLSVersion';
+    ChkMinTLSVersion.Parent := SecurityConfigPage.Surface;
+    ChkMinTLSVersion.Enabled := true;
+    ChkMinTLSVersion.Checked := true;
+end;
+
+// 安装向导初始化
+procedure InitializeWizard();
+begin
+  CreateSecurityConfigPage;
+end;
+
+// 安装程序初始化
+function InitializeSetup(): Boolean;
+begin
+    UninstallOldVersion()
+    Result := true;
+end;
+
 // 安装步骤
 procedure CurStepChanged(CurStep: TSetupStep);
-var
-    ResultCode: Integer;
 begin
     if CurStep = ssInstall then 
     begin
         Log('ssInstall');
-        ServiceWrapperCommand('stop {#ServiceWrapperConfigName}')
+        ServiceWrapperCommand('stop {#ServiceWrapperConfigName}');
+        if (ChkForceSecurityLayer.Checked) then
+        begin
+        RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp', 'SecurityLayer', 2);
+        end;
+        if (ChkMinEncryptionLevel.Checked) then
+        begin
+        RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp', 'MinEncryptionLevel', 3);
+        end;
+        if (ChkMinTLSVersion.Checked) then
+        begin
+        RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.0\Server', 'Enabled', 0);
+        RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.0\Client', 'Enabled', 0);
+        RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.1\Server', 'Enabled', 0);
+        RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.1\Client', 'Enabled', 0);
+        end;
     end 
     else if CurStep = ssPostInstall then 
     begin
@@ -93,22 +179,20 @@ begin
     begin
         // Before setup terminates after a successful install.
         Log('ssDone');
-        ServiceWrapperCommand('install {#ServiceWrapperConfigName}')
-        ServiceWrapperCommand('start {#ServiceWrapperConfigName}')
+        ServiceWrapperCommand('install {#ServiceWrapperConfigName}');
+        ServiceWrapperCommand('start {#ServiceWrapperConfigName}');
     end;
 end;
 
 // 卸载步骤
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
-var
-    ResultCode: Integer;
 begin
     if CurUninstallStep = usUninstall then 
     begin
         // Uninstall phase
         Log('usUninstall');
-        ServiceWrapperCommand('stop {#ServiceWrapperConfigName}')
-        ServiceWrapperCommand('uninstall {#ServiceWrapperConfigName}')
+        ServiceWrapperCommand('stop {#ServiceWrapperConfigName}');
+        ServiceWrapperCommand('uninstall {#ServiceWrapperConfigName}');
     end
     else if CurUninstallStep = usPostUninstall then
     begin
