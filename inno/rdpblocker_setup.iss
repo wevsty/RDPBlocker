@@ -47,6 +47,7 @@ Type: filesandordirs; Name: "{app}"
 [Code]
 var
     SecurityConfigPage: TWizardPage;
+    ChkForceNetworkUserAuth: TCheckBox;
     ChkForceSecurityLayer: TCheckBox;
     ChkMinEncryptionLevel: TCheckBox;
     ChkMinTLSVersion: TCheckBox;
@@ -102,10 +103,20 @@ begin
     wpInfoBefore,
     'RDPService Security Config',
     'Configure security options'
-    );     
+    );
+    ChkForceNetworkUserAuth := TCheckBox.Create(SecurityConfigPage);
+    ChkForceNetworkUserAuth.Left := ScaleX(40);
+    ChkForceNetworkUserAuth.Top := ScaleY(40);
+    ChkForceNetworkUserAuth.Width := SecurityConfigPage.SurfaceWidth;
+    ChkForceNetworkUserAuth.Height := ScaleY(20);
+    ChkForceNetworkUserAuth.Caption := 'ForceNetworkUserAuth';
+    ChkForceNetworkUserAuth.Parent := SecurityConfigPage.Surface;
+    ChkForceNetworkUserAuth.Enabled := true;
+    ChkForceNetworkUserAuth.Checked := true;
+    
     ChkForceSecurityLayer := TCheckBox.Create(SecurityConfigPage);
     ChkForceSecurityLayer.Left := ScaleX(40);
-    ChkForceSecurityLayer.Top := ScaleY(40);
+    ChkForceSecurityLayer.Top := ChkForceNetworkUserAuth.Top + ScaleY(40);
     ChkForceSecurityLayer.Width := SecurityConfigPage.SurfaceWidth;
     ChkForceSecurityLayer.Height := ScaleY(20);
     ChkForceSecurityLayer.Caption := 'ForceSecurityLayer';
@@ -156,6 +167,10 @@ begin
         ServiceWrapperCommand('stop {#ServiceWrapperConfigName}');
         if (ChkForceSecurityLayer.Checked) then
         begin
+        RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services', 'UserAuthentication', 1);
+        end;
+        if (ChkForceSecurityLayer.Checked) then
+        begin
         RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp', 'SecurityLayer', 2);
         end;
         if (ChkMinEncryptionLevel.Checked) then
@@ -169,7 +184,7 @@ begin
         RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.1\Server', 'Enabled', 0);
         RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.1\Client', 'Enabled', 0);
         end;
-    end 
+    end
     else if CurStep = ssPostInstall then 
     begin
         // Post-install phase
