@@ -171,10 +171,12 @@ begin
         end;
         if (ChkForceSecurityLayer.Checked) then
         begin
+        RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services', 'SecurityLayer', 2);
         RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp', 'SecurityLayer', 2);
         end;
         if (ChkMinEncryptionLevel.Checked) then
         begin
+        RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services', 'MinEncryptionLevel', 3);
         RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp', 'MinEncryptionLevel', 3);
         end;
         if (ChkMinTLSVersion.Checked) then
