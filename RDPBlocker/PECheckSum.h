@@ -3,12 +3,11 @@
 
 #include <string>
 
-#include <windows.h>
 #include <imagehlp.h>
+#include <windows.h>
 
-#pragma comment(lib,"imagehlp.lib")
-
+#pragma comment(lib, "imagehlp.lib")
 
 bool PECheckSum(const std::wstring& file_path);
 
-#endif //__PE_FILE_CHECKSUM__
+#endif  //__PE_FILE_CHECKSUM__

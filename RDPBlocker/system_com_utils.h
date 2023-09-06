@@ -1,14 +1,14 @@
 #ifndef __SYSTEM_COM_API__
 #define __SYSTEM_COM_API__
 
-#include <cstdlib>
 #include <windows.h>
+#include <cstdlib>
 
 class SystemComInitialize
 {
-public:
-	SystemComInitialize();
-	~SystemComInitialize();
+    public:
+    SystemComInitialize();
+    ~SystemComInitialize();
 };
 
-#endif //__SYSTEM_COM_API__
+#endif  //__SYSTEM_COM_API__

@@ -1,0 +1,13 @@
+﻿---
+BasedOnStyle: Chromium
+AccessModifierOffset: '0'
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: None
+AllowShortLoopsOnASingleLine: 'false'
+BreakBeforeBraces: Allman
+IndentWidth: '4'
+Language: Cpp
+SortIncludes: 'true'
+
+...

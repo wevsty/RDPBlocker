@@ -8,4 +8,4 @@
 bool regex_find_match(const boost::regex& regex_expr, const std::string& data);
 bool regex_find_match(const std::string& regex_expr, const std::string& data);
 
-#endif // __BOOST_REGEX_UTILS__
+#endif  // __BOOST_REGEX_UTILS__

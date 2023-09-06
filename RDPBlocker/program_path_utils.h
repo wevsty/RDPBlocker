@@ -1,11 +1,11 @@
 #ifndef __PROGRAM_PATH_UTILS__
 #define __PROGRAM_PATH_UTILS__
 
-#include <string>
 #include <memory>
+#include <string>
 
-#include <boost/locale.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/locale.hpp>
 
 #include <windows.h>
 
@@ -23,5 +23,4 @@ std::string get_work_dir();
 // 设置工作目录
 bool set_work_dir(const std::string& path);
 
-
-#endif // __PROGRAM_PATH_UTILS__
+#endif  // __PROGRAM_PATH_UTILS__

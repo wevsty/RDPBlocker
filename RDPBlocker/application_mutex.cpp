@@ -2,7 +2,8 @@
 
 bool ApplicationMutex::Create(const std::string& mutex_name)
 {
-    std::wstring ws_mutex_name = boost::locale::conv::to_utf<WCHAR>(mutex_name, "UTF-8");
+    std::wstring ws_mutex_name =
+        boost::locale::conv::to_utf<WCHAR>(mutex_name, "UTF-8");
     m_handle = CreateMutexW(NULL, FALSE, ws_mutex_name.c_str());
     if (m_handle == NULL)
     {
@@ -13,7 +14,8 @@ bool ApplicationMutex::Create(const std::string& mutex_name)
 
 bool ApplicationMutex::Open(const std::string& mutex_name)
 {
-    std::wstring ws_mutex_name = boost::locale::conv::to_utf<WCHAR>(mutex_name, "UTF-8");
+    std::wstring ws_mutex_name =
+        boost::locale::conv::to_utf<WCHAR>(mutex_name, "UTF-8");
     m_handle = OpenMutexW(MUTEX_ALL_ACCESS, FALSE, ws_mutex_name.c_str());
     if (m_handle == NULL)
     {
@@ -41,14 +43,15 @@ bool ApplicationMutex::IsExist(const std::string& mutex_name)
     if (bStatus == false)
     {
         DWORD dwCode = GetLastError();
-        if (dwCode == ERROR_FILE_NOT_FOUND) {
+        if (dwCode == ERROR_FILE_NOT_FOUND)
+        {
             return false;
         }
     }
     return true;
 }
 
-ApplicationMutex::ApplicationMutex() :m_handle(NULL)
+ApplicationMutex::ApplicationMutex() : m_handle(NULL)
 {
 }
 

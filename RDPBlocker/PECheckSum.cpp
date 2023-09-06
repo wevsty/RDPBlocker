@@ -2,12 +2,13 @@
 
 bool PECheckSum(const std::wstring& file_path)
 {
-    #ifdef _DEBUG
+#ifdef _DEBUG
     return true;
-    #else
+#else
     DWORD header_checksum = 0;
     DWORD current_checksum = 0;
-    DWORD status = MapFileAndCheckSumW(file_path.c_str(), &header_checksum, &current_checksum);
+    DWORD status = MapFileAndCheckSumW(file_path.c_str(), &header_checksum,
+                                       &current_checksum);
     if (status != CHECKSUM_SUCCESS)
     {
         return false;
@@ -17,5 +18,5 @@ bool PECheckSum(const std::wstring& file_path)
         return false;
     }
     return true;
-    #endif // _DEBUG
+#endif  // _DEBUG
 }

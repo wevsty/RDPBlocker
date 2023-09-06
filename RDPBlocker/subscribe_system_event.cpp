@@ -8,54 +8,64 @@ SubscribeSystemEventBase::~SubscribeSystemEventBase()
 {
 }
 
-DWORD __stdcall SubscribeSystemEventBase::SubscriptionCallback(EVT_SUBSCRIBE_NOTIFY_ACTION action, PVOID pContext, EVT_HANDLE hEvent)
+DWORD __stdcall SubscribeSystemEventBase::SubscriptionCallback(
+    EVT_SUBSCRIBE_NOTIFY_ACTION action,
+    PVOID pContext,
+    EVT_HANDLE hEvent)
 {
     UNREFERENCED_PARAMETER(pContext);
 
     DWORD status = ERROR_SUCCESS;
-    SubscribeSystemEventBase* ptr = static_cast<SubscribeSystemEventBase*>(pContext);
+    SubscribeSystemEventBase* ptr =
+        static_cast<SubscribeSystemEventBase*>(pContext);
     assert(ptr != NULL);
     switch (action)
     {
-    case EvtSubscribeActionError:
-    {
-        DWORD dwStatus = PtrToUlong(hEvent);
-        if (ERROR_EVT_QUERY_RESULT_STALE == dwStatus)
+        case EvtSubscribeActionError:
         {
-            // wprintf(L"The subscription callback was notified that event records are missing.\n");
-            // Handle if this is an issue for your application.
-            g_logger->info("SubscriptionCallback: event records are missing.");
+            DWORD dwStatus = PtrToUlong(hEvent);
+            if (ERROR_EVT_QUERY_RESULT_STALE == dwStatus)
+            {
+                // wprintf(L"The subscription callback was notified that event
+                // records are missing.\n"); Handle if this is an issue for your
+                // application.
+                g_logger->info(
+                    "SubscriptionCallback: event records are missing.");
+            }
+            else
+            {
+                // wprintf(L"The subscription callback received the following
+                // Win32 error: %lu\n", (DWORD)hEvent);
+                g_logger->error("SubscriptionCallback: Win32 error 0x{0:x}",
+                                dwStatus);
+            }
+            break;
         }
-        else
+        case EvtSubscribeActionDeliver:
         {
-            // wprintf(L"The subscription callback received the following Win32 error: %lu\n", (DWORD)hEvent);
-            g_logger->error("SubscriptionCallback: Win32 error 0x{0:x}", dwStatus);
+            std::wstring event_data;
+            status = GetEventData(hEvent, event_data);
+            if (ERROR_SUCCESS == status)
+            {
+                std::string data =
+                    boost::locale::conv::utf_to_utf<char>(event_data);
+                ptr->Push(data);
+            }
+            break;
         }
-        break;
-    }
-    case EvtSubscribeActionDeliver:
-    {
-        std::wstring event_data;
-        status = GetEventData(hEvent, event_data);
-        if (ERROR_SUCCESS == status)
+        default:
         {
-            std::string data = boost::locale::conv::utf_to_utf<char>(event_data);
-            ptr->Push(data);
+            g_logger->info("SubscriptionCallback: Unknown action.");
+            break;
         }
-        break;
-    }
-    default:
-    {
-        g_logger->info("SubscriptionCallback: Unknown action.");
-        break;
-    }
     }
     // The service ignores the returned status.
     return ERROR_SUCCESS;
 }
 
 // 获取订阅事件的XML数据
-DWORD SubscribeSystemEventBase::GetEventData(EVT_HANDLE hEvent, std::wstring& out)
+DWORD SubscribeSystemEventBase::GetEventData(EVT_HANDLE hEvent,
+                                             std::wstring& out)
 {
     DWORD status = ERROR_SUCCESS;
     DWORD dwBufferSize = 0;
@@ -63,15 +73,18 @@ DWORD SubscribeSystemEventBase::GetEventData(EVT_HANDLE hEvent, std::wstring& ou
     DWORD dwPropertyCount = 0;
     LPWSTR pRenderedContent = NULL;
 
-    if (!EvtRender(NULL, hEvent, EvtRenderEventXml, dwBufferSize, pRenderedContent, &dwBufferUsed, &dwPropertyCount))
+    if (!EvtRender(NULL, hEvent, EvtRenderEventXml, dwBufferSize,
+                   pRenderedContent, &dwBufferUsed, &dwPropertyCount))
     {
         status = GetLastError();
         if (ERROR_INSUFFICIENT_BUFFER == status)
         {
             dwBufferSize = dwBufferUsed;
-            std::shared_ptr<unsigned char[]> buffer = std::make_shared<unsigned char[]>(dwBufferSize);
+            std::shared_ptr<unsigned char[]> buffer =
+                std::make_shared<unsigned char[]>(dwBufferSize);
             pRenderedContent = reinterpret_cast<LPWSTR>(buffer.get());
-            EvtRender(NULL, hEvent, EvtRenderEventXml, dwBufferSize, pRenderedContent, &dwBufferUsed, &dwPropertyCount);
+            EvtRender(NULL, hEvent, EvtRenderEventXml, dwBufferSize,
+                      pRenderedContent, &dwBufferUsed, &dwPropertyCount);
             status = GetLastError();
             if (ERROR_SUCCESS != status)
             {
@@ -88,22 +101,16 @@ bool SubscribeSystemEventBase::Subscribe()
     return Subscribe(m_path, m_query);
 }
 
-bool SubscribeSystemEventBase::Subscribe(const std::string& path, const std::string& query)
+bool SubscribeSystemEventBase::Subscribe(const std::string& path,
+                                         const std::string& query)
 {
     std::wstring ws_path = boost::locale::conv::utf_to_utf<wchar_t>(path);
     std::wstring ws_query = boost::locale::conv::utf_to_utf<wchar_t>(query);
 
     // Subscribe to events.
-    m_handle_subscription = EvtSubscribe(
-        NULL,
-        NULL,
-        ws_path.c_str(),
-        ws_query.c_str(),
-        NULL,
-        this,
-        &SubscriptionCallback,
-        EvtSubscribeToFutureEvents
-    );
+    m_handle_subscription =
+        EvtSubscribe(NULL, NULL, ws_path.c_str(), ws_query.c_str(), NULL, this,
+                     &SubscriptionCallback, EvtSubscribeToFutureEvents);
     if (m_handle_subscription.IsInvalid())
     {
         DWORD status = GetLastError();
@@ -135,44 +142,51 @@ void SubscribeSystemEventBase::Pop(std::string& data)
     m_queue.pop(data);
 }
 
-RDPAuthFailedEvent::RDPAuthFailedEvent(): SubscribeSystemEventBase()
+RDPAuthFailedEvent::RDPAuthFailedEvent() : SubscribeSystemEventBase()
 {
     // 查询语句
     // "Event/System[EventID=4625]";
-    // "*[System[(EventID=4625) and TimeCreated[timediff(@SystemTime) <= 86400000]]]";
+    // "*[System[(EventID=4625) and TimeCreated[timediff(@SystemTime) <=
+    // 86400000]]]";
     m_path = "Security";
-    m_query = "*[System[(EventID=4625) and TimeCreated[timediff(@SystemTime) <= 86400000]]]";
+    m_query =
+        "*[System[(EventID=4625) and TimeCreated[timediff(@SystemTime) <= "
+        "86400000]]]";
 }
 
 RDPAuthFailedEvent::~RDPAuthFailedEvent()
 {
-
 }
 
 RDPAuthSucceedEvent::RDPAuthSucceedEvent() : SubscribeSystemEventBase()
 {
     // 查询语句
     // "Event/System[EventID=4624]";
-    // "*[System[(EventID=4624) and TimeCreated[timediff(@SystemTime) <= 86400000]]]";
+    // "*[System[(EventID=4624) and TimeCreated[timediff(@SystemTime) <=
+    // 86400000]]]";
     m_path = "Security";
-    m_query = "*[System[(EventID=4624) and TimeCreated[timediff(@SystemTime) <= 86400000]]]";
+    m_query =
+        "*[System[(EventID=4624) and TimeCreated[timediff(@SystemTime) <= "
+        "86400000]]]";
 }
 
 RDPAuthSucceedEvent::~RDPAuthSucceedEvent()
 {
-
 }
 
-
-bool EventDataToMap(const std::string& xml_data, std::map<std::string, std::string>& attr)
+bool EventDataToMap(const std::string& xml_data,
+                    std::map<std::string, std::string>& attr)
 {
     const boost::property_tree::ptree pt = read_xml_from_string(xml_data);
-    const boost::property_tree::ptree sub_data_pt = pt.get_child("Event.EventData");
+    const boost::property_tree::ptree sub_data_pt =
+        pt.get_child("Event.EventData");
 
-    for (boost::property_tree::ptree::value_type attr_name : sub_data_pt.get_child(""))
+    for (boost::property_tree::ptree::value_type attr_name :
+         sub_data_pt.get_child(""))
     {
         const std::string map_value = attr_name.second.data();
-        for (boost::property_tree::ptree::value_type attr_value : attr_name.second.get_child("<xmlattr>"))
+        for (boost::property_tree::ptree::value_type attr_value :
+             attr_name.second.get_child("<xmlattr>"))
         {
             const std::string map_key = attr_value.second.data();
             attr[map_key] = map_value;
@@ -180,4 +194,3 @@ bool EventDataToMap(const std::string& xml_data, std::map<std::string, std::stri
     }
     return true;
 }
-
