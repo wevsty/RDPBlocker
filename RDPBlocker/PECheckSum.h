@@ -3,8 +3,9 @@
 
 #include <string>
 
-#include <imagehlp.h>
 #include <windows.h>
+
+#include <imagehlp.h>
 
 #pragma comment(lib, "imagehlp.lib")
 
