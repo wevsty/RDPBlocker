@@ -17,7 +17,7 @@ void logger_options::set_level_string(const std::string& level_string)
     std::for_each(lower_level.begin(), lower_level.end(),
                   [](char& c)
                   {
-                      c = std::tolower(c);
+                      c = static_cast<char>(std::tolower(c));
                   });
     level = spdlog::level::from_str(lower_level);
 }
