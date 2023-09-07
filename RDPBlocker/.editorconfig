@@ -1,0 +1,10 @@
+[*]
+end_of_line = crlf
+charset = utf-8
+
+
+[*.{c++,c,cc,cpp,cxx,h,h++,hh,hpp,hxx,inl,ipp,tlh,tli}]
+end_of_line = crlf
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
