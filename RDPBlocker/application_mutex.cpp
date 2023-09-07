@@ -2,8 +2,7 @@
 
 bool ApplicationMutex::Create(const std::string& mutex_name)
 {
-    std::wstring ws_mutex_name =
-        boost::locale::conv::to_utf<WCHAR>(mutex_name, "UTF-8");
+    std::wstring ws_mutex_name = utf_to_utf<WCHAR>(mutex_name);
     m_handle = CreateMutexW(NULL, FALSE, ws_mutex_name.c_str());
     if (m_handle == NULL)
     {
@@ -14,8 +13,7 @@ bool ApplicationMutex::Create(const std::string& mutex_name)
 
 bool ApplicationMutex::Open(const std::string& mutex_name)
 {
-    std::wstring ws_mutex_name =
-        boost::locale::conv::to_utf<WCHAR>(mutex_name, "UTF-8");
+    std::wstring ws_mutex_name = utf_to_utf<WCHAR>(mutex_name);
     m_handle = OpenMutexW(MUTEX_ALL_ACCESS, FALSE, ws_mutex_name.c_str());
     if (m_handle == NULL)
     {

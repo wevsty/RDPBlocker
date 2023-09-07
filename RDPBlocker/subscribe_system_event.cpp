@@ -47,8 +47,7 @@ DWORD __stdcall SubscribeSystemEventBase::SubscriptionCallback(
             status = GetEventData(hEvent, event_data);
             if (ERROR_SUCCESS == status)
             {
-                std::string data =
-                    boost::locale::conv::utf_to_utf<char>(event_data);
+                std::string data = utf_to_utf<char>(event_data);
                 ptr->Push(data);
             }
             break;
@@ -104,8 +103,8 @@ bool SubscribeSystemEventBase::Subscribe()
 bool SubscribeSystemEventBase::Subscribe(const std::string& path,
                                          const std::string& query)
 {
-    std::wstring ws_path = boost::locale::conv::utf_to_utf<wchar_t>(path);
-    std::wstring ws_query = boost::locale::conv::utf_to_utf<wchar_t>(query);
+    std::wstring ws_path = utf_to_utf<wchar_t>(path);
+    std::wstring ws_query = utf_to_utf<wchar_t>(query);
 
     // Subscribe to events.
     m_handle_subscription =

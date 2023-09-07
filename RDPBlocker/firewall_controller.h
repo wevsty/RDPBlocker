@@ -1,18 +1,13 @@
-#ifndef __WINDOWS_FIREWALL_BLOCK__
-#define __WINDOWS_FIREWALL_BLOCK__
+#ifndef __WINDOWS_FIREWALL_CONTROLLER__
+#define __WINDOWS_FIREWALL_CONTROLLER__
 
 #include <string>
-
-#if !defined(NOMINMAX)
-#define NOMINMAX 1
-#endif
 
 #include <atlcomcli.h>
 #include <netfw.h>
 #include <windows.h>
 
-#include <boost/locale.hpp>
-
+#include "utf_convert.h"
 #include "boost_regex_utils.h"
 #include "logger.h"
 

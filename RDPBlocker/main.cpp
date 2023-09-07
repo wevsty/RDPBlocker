@@ -27,6 +27,7 @@
 #include "system_com_utils.h"
 #include "yaml.h"
 
+#include "utf_convert.h"
 namespace program_setting
 {
 // 固定常量
@@ -477,14 +478,14 @@ bool load_config_file(const std::string& file_path)
 // 确保程序目录为工作目录
 void ensure_self_work_dir()
 {
-    std::string work_dir = get_self_dir_path();
+    std::string work_dir = self_directory_path();
     set_work_dir(work_dir);
 }
 
 // 对程序自身进行校验
 void check_self_file()
 {
-    std::string self_path = get_self_file_path();
+    std::string self_path = self_file_path();
     std::wstring ws_path = boost::locale::conv::utf_to_utf<wchar_t>(self_path);
     bool status = PECheckSum(ws_path);
     if (status == false)
@@ -619,15 +620,15 @@ int main(int argc, char* argv[])
         boost::bind(&boost::asio::io_context::run, &io_context));
 
     // 启动事件订阅线程
-    boost::thread event_thread(
+    boost::thread thread_process_auth_failed_event(
         boost::bind(&ProcessRDPAuthFailedEvent, &io_context));
     if (program_setting::check_workstation_name)
     {
-        boost::thread event_thread(
+        boost::thread thread_process_auth_succeed_event(
             boost::bind(&ProcessRDPAuthSucceedEvent, &io_context));
     }
 
-    event_thread.join();
+    // event_thread.join();
     io_thread.join();
     return EXIT_CODE::SUCCESS;
 }

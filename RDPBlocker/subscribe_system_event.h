@@ -1,22 +1,18 @@
 #ifndef __SUBSCRIBE_SYSTEM_EVENT_CLASS__
 #define __SUBSCRIBE_SYSTEM_EVENT_CLASS__
 
-#if !defined(NOMINMAX)
-#define NOMINMAX 1
-#endif
-
-#include <boost/locale.hpp>
-#include "boost_xml_utils.h"
-#include "concurrent_queue.h"
-#include "handle_wrapper.h"
-#include "logger.h"
-
 #include <map>
 #include <memory>
 #include <string>
 
 #include <windows.h>
 #include <winevt.h>
+
+#include "boost_xml_utils.h"
+#include "concurrent_queue.h"
+#include "handle_wrapper.h"
+#include "logger.h"
+#include "utf_convert.h"
 
 #pragma comment(lib, "wevtapi.lib")
 

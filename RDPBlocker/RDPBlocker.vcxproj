@@ -94,6 +94,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalOptions>/utf-8 /D "NOMINMAX" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -108,6 +109,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalOptions>/utf-8 /D "NOMINMAX" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -118,14 +120,14 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/utf-8 /D "NOMINMAX" %(AdditionalOptions)</AdditionalOptions>
       <SDLCheck>true</SDLCheck>
+      <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,7 +147,7 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <ControlFlowGuard>Guard</ControlFlowGuard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/utf-8 /D "NOMINMAX" %(AdditionalOptions)</AdditionalOptions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
@@ -190,7 +192,12 @@
     <ClInclude Include="system_com_utils.h" />
     <ClInclude Include="firewall_controller.h" />
     <ClInclude Include="timer.h" />
+    <ClInclude Include="utf_convert.h" />
     <ClInclude Include="yaml.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".clang-format" />
+    <None Include=".editorconfig" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

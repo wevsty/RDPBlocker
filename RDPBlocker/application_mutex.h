@@ -1,14 +1,10 @@
 #ifndef __APPLICATION_MUTEX__
 #define __APPLICATION_MUTEX__
 
-#if !defined(NOMINMAX)
-#define NOMINMAX 1
-#endif
-
 #include <windows.h>
 #include <string>
 
-#include <boost/locale.hpp>
+#include "utf_convert.h"
 
 class ApplicationMutex
 {
