@@ -182,6 +182,7 @@
     <ClInclude Include="PECheckSum.h" />
     <ClInclude Include="program_path_utils.h" />
     <ClInclude Include="remote_address_status.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="self_exit_code.h" />
     <ClInclude Include="random_utils.h" />
     <ClInclude Include="boost_regex_utils.h" />
@@ -193,11 +194,15 @@
     <ClInclude Include="firewall_controller.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="utf_convert.h" />
+    <ClInclude Include="version.h" />
     <ClInclude Include="yaml.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
     <None Include=".editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="RDPBlocker.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
