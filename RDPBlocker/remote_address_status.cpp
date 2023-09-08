@@ -1,7 +1,11 @@
 #include "remote_address_status.h"
 
 RemoteAddressStatus::RemoteAddressStatus()
-    : m_count(0), m_blocked(false), m_expire_timer()
+    : m_count(0),
+      m_expire_time(0),
+      m_expire_timer(),
+      m_block_time(0),
+      m_blocked_timer()
 {
 }
 
@@ -19,27 +23,54 @@ void RemoteAddressStatus::set_count(const int count)
     m_count = count;
 }
 
-void RemoteAddressStatus::reset_expired_timer()
+int RemoteAddressStatus::get_expire_time() const
 {
+    return m_block_time;
+}
+
+void RemoteAddressStatus::set_expire_time(const int expired_time)
+{
+    m_expire_time = expired_time;
     m_expire_timer.initialize();
 }
 
-bool RemoteAddressStatus::is_expired(const std::time_t value) const
+void RemoteAddressStatus::reset_expire_timer()
 {
-    return m_expire_timer.is_timeout(value);
+    m_expire_timer.reset();
 }
 
-bool RemoteAddressStatus::get_block_flag() const
+bool RemoteAddressStatus::is_expired() const
 {
-    return m_blocked;
+    if (m_expire_time <= 0)
+    {
+        return false;
+    }
+    return m_expire_timer.is_timeout(m_expire_time);
 }
 
-void RemoteAddressStatus::set_block_flag(const bool flag)
+int RemoteAddressStatus::get_block_time() const
 {
-    m_blocked = flag;
+    return m_block_time;
+}
+
+void RemoteAddressStatus::set_block_time(const int block_time)
+{
+    m_block_time = block_time;
+    m_blocked_timer.initialize();
+}
+
+void RemoteAddressStatus::reset_block_timer()
+{
+    m_blocked_timer.reset();
 }
 
 bool RemoteAddressStatus::is_blocked() const
 {
-    return m_blocked;
+    bool b_block_status = false;
+    if (m_block_time <= 0)
+    {
+        return b_block_status;
+    }
+    b_block_status = !m_blocked_timer.is_timeout(m_block_time);
+    return b_block_status;
 }

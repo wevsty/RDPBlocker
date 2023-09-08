@@ -125,7 +125,7 @@ ApplicationConfig::ApplicationConfig()
     : m_mutex_name("RDPBlocker_mutex"),
       m_rule_prefix("AUTO_BLOCKED_"),
       m_build_version(APPLICATION_FILE_VERSION_STRING),
-      m_build_date(__DATE__ __TIME__),
+      m_build_date(__DATE__ " " __TIME__),
       m_file_path("config.yaml"),
       m_block(),
       m_workstation_name_config(),

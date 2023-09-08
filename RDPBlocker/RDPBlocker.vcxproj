@@ -138,7 +138,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -162,6 +162,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="application_config.cpp" />
     <ClCompile Include="boost_regex_utils.cpp" />
     <ClCompile Include="boost_xml_utils.cpp" />
     <ClCompile Include="logger.cpp" />
@@ -177,13 +178,14 @@
     <ClCompile Include="timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="application_config.h" />
     <ClInclude Include="concurrent_queue.h" />
     <ClInclude Include="application_mutex.h" />
     <ClInclude Include="PECheckSum.h" />
     <ClInclude Include="program_path_utils.h" />
     <ClInclude Include="remote_address_status.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="self_exit_code.h" />
+    <ClInclude Include="application_exit_code.h" />
     <ClInclude Include="random_utils.h" />
     <ClInclude Include="boost_regex_utils.h" />
     <ClInclude Include="boost_xml_utils.h" />

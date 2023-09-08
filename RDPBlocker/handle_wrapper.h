@@ -54,6 +54,11 @@ class HandleWrapper
         m_Handle = value;
     }
 
+    HandleType& Reference()
+    {
+        return m_Handle;
+    }
+
     bool IsVaild() const
     {
         return (m_Handle != Traits::InvalidValue());

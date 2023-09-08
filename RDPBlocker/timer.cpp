@@ -1,7 +1,8 @@
 #include "timer.h"
 
-Timer::Timer() : m_time(time(0))
+Timer::Timer() : m_time(0)
 {
+    initialize();
 }
 
 Timer::~Timer()

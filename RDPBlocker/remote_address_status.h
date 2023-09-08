@@ -10,9 +10,13 @@ class RemoteAddressStatus
 {
     private:
     int m_count;
-    bool m_blocked;
+    // 过期时间
+    int m_expire_time;
     Timer m_expire_timer;
-
+    // 阻挡时间
+    int m_block_time;
+    Timer m_blocked_timer;
+    
     public:
     RemoteAddressStatus();
     ~RemoteAddressStatus();
@@ -20,11 +24,15 @@ class RemoteAddressStatus
     int get_count() const;
     void set_count(const int count);
 
-    void reset_expired_timer();
-    bool is_expired(const std::time_t value) const;
+    
+    int get_expire_time() const;
+    void set_expire_time(const int expired_time);
+    void reset_expire_timer();
+    bool is_expired() const;
 
-    bool get_block_flag() const;
-    void set_block_flag(const bool flag);
+    int get_block_time() const;
+    void set_block_time(const int block_time);
+    void reset_block_timer();
     bool is_blocked() const;
 };
 

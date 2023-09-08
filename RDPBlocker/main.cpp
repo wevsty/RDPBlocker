@@ -11,10 +11,13 @@
 
 #include <boost/asio.hpp>
 #include <boost/asio/steady_timer.hpp>
+#include <boost/nowide/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/thread.hpp>
 
 #include "PECheckSum.h"
+#include "application_config.h"
+#include "application_exit_code.h"
 #include "application_mutex.h"
 #include "boost_xml_utils.h"
 #include "firewall_controller.h"
@@ -22,42 +25,10 @@
 #include "program_path_utils.h"
 #include "random_utils.h"
 #include "remote_address_status.h"
-#include "self_exit_code.h"
 #include "subscribe_system_event.h"
 #include "system_com_utils.h"
-#include "yaml.h"
-
 #include "utf_convert.h"
-namespace program_setting
-{
-// 固定常量
-const std::string app_mutex_name = "RDPBlocker_mutex";
-const std::string program_version = "1.2.5.5";
-const std::string rule_prefix = "AUTO_BLOCKED_";
-
-// 配置文件路径
-std::string config_file_path;
-
-// 阻挡阈值
-int block_threshold;
-// 阻挡时间
-int block_time;
-
-// log 配置
-logger_options logger_setting;
-
-// 检查主机名
-bool check_workstation_name;
-// 用户绑定主机名
-std::map<std::string, std::string> user_bind_workstation_name;
-// 主机名阻挡名单
-std::set<std::string> workstation_name_blocklist;
-// 主机名白名单
-std::set<std::string> workstation_name_whitelist;
-
-// IP白名单列表
-std::vector<boost::regex> ip_whitelist;
-}  // namespace program_setting
+#include "yaml.h"
 
 class BlockRemoteAddressTask
     : public std::enable_shared_from_this<BlockRemoteAddressTask>
@@ -113,7 +84,7 @@ void CreateBlockRemoteAddressPlan(boost::asio::io_context& io_context,
     constexpr unsigned int RULE_RANDOM_CHARS_LENGTH = 8;
 
     // 生成随机的规则名
-    std::string rule_name = program_setting::rule_prefix;
+    std::string rule_name = g_config.m_rule_prefix;
     rule_name += random_string(RULE_RANDOM_CHARS_LENGTH);
 
     std::shared_ptr<BlockRemoteAddressTask> block_task =
@@ -134,27 +105,14 @@ bool IsIPAddress(const std::string& data)
             boost::asio::ip::address::from_string(data);
         return true;
     }
-    catch (std::exception& err)
+    catch (const boost::system::system_error& error)
     {
-        std::cout << err.what() << std::endl;
+        std::cout << error.what() << std::endl;
         return false;
     }
 }
 
-// 验证IP是否为白名单
-bool IsWhitelistAddress(const std::string& data)
-{
-    for (const auto& expr : program_setting::ip_whitelist)
-    {
-        if (regex_find_match(expr, data) == true)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-void ProcessRemoteAddressesLoginFailed(
+void BlockRemoteAddressesWhenLoginFailed(
     boost::asio::io_context& io_context,
     std::map<std::string, RemoteAddressStatus>& remote_address_map,
     const std::string& remote_address)
@@ -166,7 +124,7 @@ void ProcessRemoteAddressesLoginFailed(
         return;
     }
     // 检测白名单
-    if (IsWhitelistAddress(remote_address) == true)
+    if (g_config.m_ip_config.is_white_address(remote_address) == true)
     {
         g_logger->info("Whitelist address : {}", remote_address);
         return;
@@ -175,40 +133,37 @@ void ProcessRemoteAddressesLoginFailed(
     auto find_iter = remote_address_map.find(remote_address);
     if (find_iter == remote_address_map.end())
     {
+        const int n_expire_time = g_config.m_block.expire_time();
         RemoteAddressStatus st;
-        st.set_count(0);
-        st.reset_expired_timer();
+        st.set_expire_time(n_expire_time);
         remote_address_map[remote_address] = st;
         find_iter = remote_address_map.find(remote_address);
     }
+    // 延长记录保存时间
+    find_iter->second.reset_expire_timer();
     // 记录次数增加1
     int temp_count = find_iter->second.get_count() + 1;
     find_iter->second.set_count(temp_count);
     // 判断是否达到阻挡阈值
-    if (find_iter->second.get_count() >= program_setting::block_threshold)
+    if (find_iter->second.get_count() >= g_config.m_block.m_threshold)
     {
         if (find_iter->second.is_blocked() == false)
         {
             g_logger->info("Block address : {}", remote_address);
+            const int n_block_time = g_config.m_block.block_time();
             CreateBlockRemoteAddressPlan(io_context, remote_address,
-                                         program_setting::block_time);
-            find_iter->second.set_block_flag(true);
-            find_iter->second.reset_expired_timer();
+                                         n_block_time);
+            find_iter->second.set_block_time(n_block_time);
         }
         else
         {
             g_logger->debug("Blocked address : {}", remote_address);
         }
     }
-    else
-    {
-        find_iter->second.reset_expired_timer();
-    }
 }
 
-void ProcessRemoteAddressesLoginSucceed(
+void BlockRemoteAddressesWhenLoginSucceed(
     boost::asio::io_context& io_context,
-    std::map<std::string, RemoteAddressStatus>& remote_address_map,
     const std::string& remote_address)
 {
     // 校验IP地址
@@ -218,33 +173,16 @@ void ProcessRemoteAddressesLoginSucceed(
         return;
     }
     // 检测白名单
-    if (IsWhitelistAddress(remote_address) == true)
+    if (g_config.m_ip_config.is_white_address(remote_address) == true)
     {
         g_logger->info("Whitelist address : {}", remote_address);
         return;
     }
-    // 寻找对应的地址记录
-    auto find_iter = remote_address_map.find(remote_address);
-    if (find_iter == remote_address_map.end())
-    {
-        RemoteAddressStatus st;
-        st.set_count(0);
-        st.reset_expired_timer();
-        remote_address_map[remote_address] = st;
-        find_iter = remote_address_map.find(remote_address);
-    }
-    if (find_iter->second.is_blocked() == false)
-    {
-        g_logger->info("Block address : {}", remote_address);
-        CreateBlockRemoteAddressPlan(io_context, remote_address,
-                                     program_setting::block_time);
-        find_iter->second.set_block_flag(true);
-        find_iter->second.reset_expired_timer();
-    }
-    else
-    {
-        g_logger->debug("Blocked address : {}", remote_address);
-    }
+
+    // 阻止地址
+    g_logger->info("Block address : {}", remote_address);
+    const int n_block_time = g_config.m_block.block_time();
+    CreateBlockRemoteAddressPlan(io_context, remote_address, n_block_time);
 }
 
 void delete_expire_remote_address(
@@ -252,8 +190,13 @@ void delete_expire_remote_address(
 {
     for (auto it = map.begin(); it != map.end();)
     {
-        if (it->second.is_expired(program_setting::block_time) == true)
+        if (it->second.is_blocked() == true)
         {
+            continue;
+        }
+        if (it->second.is_expired() == true)
+        {
+            g_logger->debug("Delete expire : {}", it->first);
             // delete item
             it = map.erase(it);
         }
@@ -268,14 +211,13 @@ void ProcessRDPAuthFailedEvent(boost::asio::io_context* io_context_ptr)
 {
     boost::asio::io_context& io_context = *io_context_ptr;
     std::map<std::string, RemoteAddressStatus> remote_address_map;
-    // g_logger->info("Subscribe RDP auth failed event.");
     g_logger->info("Subscribe RDPAuthFailedEvent.");
     RDPAuthFailedEvent auth_failed_evt;
     // 订阅RDP登录失败事件
     if (auth_failed_evt.Subscribe() != true)
     {
         g_logger->error("Subscribe RDPAuthFailedEvent failed.");
-        std::exit(EXIT_CODE::SUBSCRIBE_EVENT_ERROR);
+        std::exit(APPLICATION_EXIT_CODE::FAILED);
     }
     while (true)
     {
@@ -296,7 +238,7 @@ void ProcessRDPAuthFailedEvent(boost::asio::io_context* io_context_ptr)
             continue;
         }
         g_logger->info("Auth failed : {}", remote_ip_address);
-        ProcessRemoteAddressesLoginFailed(io_context, remote_address_map,
+        BlockRemoteAddressesWhenLoginFailed(io_context, remote_address_map,
                                           remote_ip_address);
     }
 }
@@ -314,22 +256,14 @@ std::string GetLocalWorkstationName()
 void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
 {
     boost::asio::io_context& io_context = *io_context_ptr;
-    std::map<std::string, RemoteAddressStatus> remote_address_map;
-    std::map<std::string, std::string> workstation_name_table;
     std::string local_hostname = GetLocalWorkstationName();
-    // 载入绑定名单
-    for (auto it = program_setting::user_bind_workstation_name.begin();
-         it != program_setting::user_bind_workstation_name.end(); it++)
-    {
-        workstation_name_table[it->first] = it->second;
-    }
     g_logger->info("Subscribe RDPAuthSucceedEvent.");
     RDPAuthSucceedEvent auth_succeed_evt;
     // 订阅RDP登录失败事件
     if (auth_succeed_evt.Subscribe() != true)
     {
         g_logger->error("Subscribe RDPAuthSucceedEvent failed.");
-        std::exit(EXIT_CODE::SUBSCRIBE_EVENT_ERROR);
+        std::exit(APPLICATION_EXIT_CODE::FAILED);
     }
     while (true)
     {
@@ -337,9 +271,7 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
         std::string event_xml_data;
         auth_succeed_evt.Pop(event_xml_data);
 
-        // 删除过期的记录
-        delete_expire_remote_address(remote_address_map);
-
+        // 收到事件
         std::map<std::string, std::string> event_attr;
         EventDataToMap(event_xml_data, event_attr);
         std::string logon_type = event_attr["LogonType"];
@@ -357,10 +289,11 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
         {
             continue;
         }
+
+        g_logger->info("Check login {} : {}", user_name, workstation_name);
+
         // 检查工作站名白名单
-        auto whiltelist_it =
-            program_setting::workstation_name_whitelist.find(workstation_name);
-        if (whiltelist_it != program_setting::workstation_name_whitelist.end())
+        if (g_config.m_workstation_name_config.is_white_name(workstation_name))
         {
             // 说明在白名单内
             g_logger->info("Whitelist login {} : {}", user_name,
@@ -368,131 +301,73 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
             continue;
         }
         // 检查工作站名阻挡名单
-        auto blocklist_it =
-            program_setting::workstation_name_blocklist.find(workstation_name);
-        if (blocklist_it != program_setting::workstation_name_blocklist.end())
+        if (g_config.m_workstation_name_config.is_block_name(workstation_name))
         {
             // 说明在阻挡名单内
             g_logger->info("Blocklist login {} : {}", user_name,
                            workstation_name);
-            ProcessRemoteAddressesLoginSucceed(io_context, remote_address_map,
-                                               remote_ip_address);
+            BlockRemoteAddressesWhenLoginSucceed(io_context, remote_ip_address);
             continue;
         }
         // 进行绑定检查
-        auto table_it = workstation_name_table.find(user_name);
-        if (table_it == workstation_name_table.end())
+        if (g_config.m_workstation_name_config.m_check_bind == false)
         {
-            g_logger->info("First login {} : {}", user_name, workstation_name);
-            workstation_name_table[user_name] = workstation_name;
+            // 如果不进行绑定检查则直接跳过
+            // 直接允许登录
+            g_logger->info("Allow login {} : {}", user_name, workstation_name);
+            continue;
+        }
+
+        if (g_config.m_workstation_name_config.exists_bind_record(user_name) == false)
+        {
+            // 不存在绑定记录
+            // 可能为首次登录
+            // g_logger->info("First login {} : {}", user_name, workstation_name);
+            if (g_config.m_workstation_name_config.m_auto_bind == true)
+            {
+                // 创建绑定关系
+                g_config.m_workstation_name_config.create_bind_record(
+                    user_name, workstation_name);
+                g_logger->info("Auto bind {} : {}", user_name,
+                               workstation_name);
+            }
+        }
+        
+        if (g_config.m_workstation_name_config.check_bind_record(
+            user_name, workstation_name) ==
+            true)
+        {
+            // 允许登录
+            g_logger->info("Allow login {} : {}", user_name, workstation_name);
+            continue;
         }
         else
         {
-            g_logger->info("Check login {} : {}", user_name, workstation_name);
-            if (table_it->second == workstation_name)
-            {
-                g_logger->info("Allow login {} : {}", user_name,
-                               workstation_name);
-                continue;
-            }
-            else
-            {
-                g_logger->info("Block login {} : {}", user_name,
-                               workstation_name);
-                ProcessRemoteAddressesLoginSucceed(
-                    io_context, remote_address_map, remote_ip_address);
-            }
+            // 不允许登录
+            g_logger->info("Block login {} : {}", user_name, workstation_name);
+            BlockRemoteAddressesWhenLoginSucceed(io_context, remote_ip_address);
         }
-    }
-}
-
-// 载入配置文件
-bool load_config_file(const std::string& file_path)
-{
-    bool bRet = true;
-    try
-    {
-        YAML::Node config = YAML::LoadFile(file_path);
-
-        // 日志配置
-        const YAML::Node& node_logs = config["log"];
-        std::string output_level = node_logs["level"].as<std::string>();
-        program_setting::logger_setting.set_level_string(output_level);
-
-        // 阻挡配置
-        program_setting::block_threshold = config["block_threshold"].as<int>();
-        program_setting::block_time = config["block_time"].as<int>();
-
-        // 主机名配置
-        const YAML::Node& node_workstation_name = config["workstation_name"];
-        program_setting::check_workstation_name =
-            node_workstation_name["check"].as<bool>();
-        const YAML::Node& node_user_bind = node_workstation_name["user_bind"];
-        for (YAML::const_iterator it = node_user_bind.begin();
-             it != node_user_bind.end(); ++it)
-        {
-            std::string user_name = it->first.as<std::string>();
-            std::string bind_name = it->second.as<std::string>();
-            program_setting::user_bind_workstation_name[user_name] = bind_name;
-        }
-        // 主机名阻挡名单
-        const YAML::Node& node_workstation_name_blocklist =
-            node_workstation_name["blocklist"];
-        for (unsigned i = 0; i < node_workstation_name_blocklist.size(); i++)
-        {
-            std::string workstation_name =
-                node_workstation_name_blocklist[i].as<std::string>();
-            program_setting::workstation_name_blocklist.insert(
-                workstation_name);
-        }
-        // 主机名白名单
-        const YAML::Node& node_workstation_name_whitelist =
-            node_workstation_name["whitelist"];
-        for (unsigned i = 0; i < node_workstation_name_whitelist.size(); i++)
-        {
-            std::string workstation_name =
-                node_workstation_name_whitelist[i].as<std::string>();
-            program_setting::workstation_name_whitelist.insert(
-                workstation_name);
-        }
-
-        // IP白名单配置
-        const YAML::Node& node_ip_address = config["IP_Address"];
-        const YAML::Node& node_ip_whiltelist = node_ip_address["whitelist"];
-        for (unsigned i = 0; i < node_ip_whiltelist.size(); i++)
-        {
-            std::string regex_string = node_ip_whiltelist[i].as<std::string>();
-            boost::regex regex_obj(regex_string);
-            program_setting::ip_whitelist.push_back(regex_obj);
-        }
-    }
-    catch (YAML::Exception& err)
-    {
-        bRet = false;
-        std::cout << "Loading configuration file error." << std::endl;
-        std::cout << err.what() << std::endl;
-    }
-    return bRet;
+    } // while loop
 }
 
 // 确保程序目录为工作目录
-void ensure_self_work_dir()
+void ensure_work_dir()
 {
     std::string work_dir = self_directory_path();
     set_work_dir(work_dir);
 }
 
 // 对程序自身进行校验
-void check_self_file()
+void check_program_file()
 {
     std::string self_path = self_file_path();
-    std::wstring ws_path = boost::locale::conv::utf_to_utf<wchar_t>(self_path);
+    std::wstring ws_path = utf_to_utf<wchar_t>(self_path);
     bool status = PECheckSum(ws_path);
     if (status == false)
     {
-        std::cout << "Check file failed" << std::endl;
+        std::cout << "Check program file failed" << std::endl;
         std::cout << "The file has been corrupted" << std::endl;
-        std::exit(EXIT_CODE::CHECKSUM_ERROR);
+        std::exit(APPLICATION_EXIT_CODE::FAILED);
     }
 }
 
@@ -503,12 +378,13 @@ void prase_argv(int argc, char* argv[])
     {
         // namespace BPO = boost::program_options;
         boost::program_options::options_description options(
-            "RDPBlocker Options");
-        options.add_options()("help", "Produce help message")(
+            "RDPBlocker command options");
+        options.add_options()("help", "Produce help message");
+        options.add_options()("version", "Show version info");
+        options.add_options()(
             "config",
-            boost::program_options::value<std::string>(
-                &program_setting::config_file_path),
-            "file path");
+            boost::program_options::value<std::string>(&g_config.m_file_path),
+            "config file path");
         // parse program options
         boost::program_options::variables_map var_map;
         boost::program_options::store(
@@ -516,83 +392,57 @@ void prase_argv(int argc, char* argv[])
             var_map);
         boost::program_options::notify(var_map);
 
-        if (var_map.count("help"))
+        if (var_map.count("help") != 0)
         {
             std::cout << options << std::endl;
-            std::exit(EXIT_CODE::SUCCESS);
+            std::exit(APPLICATION_EXIT_CODE::SUCCESS);
         }
-
+        if (var_map.count("version") != 0)
+        {
+            std::cout << "RDPBlocker info" << std::endl;
+            std::cout << "Version: " << g_config.m_build_version << std::endl;
+            std::cout << "Build Date: " << g_config.m_build_date << std::endl;
+            std::exit(APPLICATION_EXIT_CODE::SUCCESS);
+        }
         if (var_map.count("config") == 0)
         {
             // 如果未设定加载的配置文件默认为 config.yaml
-            program_setting::config_file_path = "config.yaml";
+            g_config.m_file_path = "config.yaml";
         }
-        if (load_config_file(program_setting::config_file_path) == false)
+        if (g_config.load_config_file() == false)
         {
-            std::exit(EXIT_CODE::LOAD_CONFIG_ERROR);
+            std::exit(APPLICATION_EXIT_CODE::FAILED);
         }
     }
-    catch (std::exception& err)
+    catch (const boost::program_options::error& err)
     {
         std::cout << "Parsing command line error" << std::endl;
         std::cout << err.what() << std::endl;
-        std::exit(EXIT_CODE::COMMAND_PARSE_ERROR);
-    }
-}
-
-// 初始化全局logger
-void initialize_global_logger(const logger_options& options)
-{
-    try
-    {
-        // 控制台输出
-        auto console_sink =
-            std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-
-        // spdlog::logger logger("global_logger", { console_sink, rotating_sink
-        // });
-        auto logger_ptr = std::make_shared<spdlog::logger>(
-            spdlog::logger("global_logger", {console_sink}));
-
-        logger_ptr->set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v");
-        logger_ptr->set_level(options.level);
-        spdlog::set_default_logger(logger_ptr);
-        spdlog::flush_on(spdlog::level::info);
-        // 每隔10秒自动刷新日志
-        spdlog::flush_every(std::chrono::seconds(10));
-
-        g_logger = logger_ptr;
-    }
-    catch (const spdlog::spdlog_ex& err)
-    {
-        std::cout << "Loger init failed: " << err.what() << std::endl;
-        std::exit(EXIT_CODE::INIT_LOGGER_ERROR);
+        std::exit(APPLICATION_EXIT_CODE::FAILED);
     }
 }
 
 int main(int argc, char* argv[])
 {
+    boost::nowide::nowide_filesystem();
     // 确保程序目录为工作目录
-    ensure_self_work_dir();
+    ensure_work_dir();
 
     // 对程序文件进行自校验
-    check_self_file();
+    check_program_file();
+
+    // 初始化logger
+    initialize_logger();
 
     // 解析命令行参数
     prase_argv(argc, argv);
 
-    // 初始化logger
-    initialize_global_logger(program_setting::logger_setting);
-    g_logger->info("RDPBlocker Version {}", program_setting::program_version);
-
     // 确保系统中只有一个RDPBlocker运行，以免互相干扰。
     ApplicationMutex app_mutex;
-    if (app_mutex.Lock(program_setting::app_mutex_name) == false)
+    if (app_mutex.Lock(g_config.m_mutex_name) == false)
     {
         g_logger->warn("RDPBlocker already running in the system");
-        g_logger->warn(
-            "Please do not start more than one process at the same time");
-        return EXIT_CODE::APP_EXIST_ERROR;
+        return APPLICATION_EXIT_CODE::FAILED;
     }
 
     // 初始化COM
@@ -603,12 +453,16 @@ int main(int argc, char* argv[])
     if (firewall_controller::IsFireWallEnabled() == false)
     {
         g_logger->error("Windows Firewall must be turn on");
-        return EXIT_CODE::FIREWALL_ERROR;
+        return APPLICATION_EXIT_CODE::FAILED;
     }
+
+    // 启动流程
+    g_logger->info("RDPBlocker version {}", g_config.m_build_version);
 
     // 重启时自动删除遗留规则
     g_logger->debug("Remove existing auto-blocking rules");
-    firewall_controller::DeleteRulesByRegex(program_setting::rule_prefix);
+    firewall_controller::DeleteRulesByRegex(g_config.m_rule_prefix);
+    g_logger->debug("Remove auto-blocking rules finish");
 
     boost::asio::io_context io_context;
 
@@ -620,15 +474,17 @@ int main(int argc, char* argv[])
         boost::bind(&boost::asio::io_context::run, &io_context));
 
     // 启动事件订阅线程
+    // 启动登陆失败事件处理线程
     boost::thread thread_process_auth_failed_event(
         boost::bind(&ProcessRDPAuthFailedEvent, &io_context));
-    if (program_setting::check_workstation_name)
+    // 检查配置是否启用工作站名检查功能
+    if (g_config.m_workstation_name_config.m_enable_check)
     {
+        // 启动登陆成功事件处理线程
         boost::thread thread_process_auth_succeed_event(
             boost::bind(&ProcessRDPAuthSucceedEvent, &io_context));
     }
 
-    // event_thread.join();
     io_thread.join();
-    return EXIT_CODE::SUCCESS;
+    return APPLICATION_EXIT_CODE::SUCCESS;
 }

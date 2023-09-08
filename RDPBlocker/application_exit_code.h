@@ -1,0 +1,10 @@
+#ifndef __APPLICATION_EXIT_CODE__
+#define __APPLICATION_EXIT_CODE__
+
+enum APPLICATION_EXIT_CODE
+{
+    SUCCESS = 0,
+    FAILED = 10
+};
+
+#endif  //__APPLICATION_EXIT_CODE__

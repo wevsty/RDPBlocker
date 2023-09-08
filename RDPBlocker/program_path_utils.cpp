@@ -19,7 +19,6 @@ std::string self_file_path()
 
 std::string self_directory_path()
 {
-    boost::nowide::nowide_filesystem();
     boost::filesystem::path program_path = self_file_path();
     return program_path.parent_path().string();
 }
