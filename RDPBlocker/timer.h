@@ -15,6 +15,7 @@ class Timer
 
     std::time_t get() const;
     void set(const std::time_t value);
+    void reset();
 
     private:
     volatile std::time_t m_time;

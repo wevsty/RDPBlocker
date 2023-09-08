@@ -32,3 +32,8 @@ void Timer::set(const std::time_t value)
 {
     m_time = value;
 }
+
+void Timer::reset()
+{
+    m_time = time(0);
+}
