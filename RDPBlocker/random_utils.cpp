@@ -2,10 +2,14 @@
 
 int random_int(const int min, const int max)
 {
-    std::random_device rd;
-    std::default_random_engine engine(rd());
-    std::uniform_int_distribution<> distrib(min, max);
-    return distrib(engine);
+    if (max > min)
+    {
+        std::random_device rd;
+        std::default_random_engine engine(rd());
+        std::uniform_int_distribution<> distrib(min, max);
+        return distrib(engine);
+    }
+    return 0;
 }
 
 std::string random_string(const unsigned int count,
