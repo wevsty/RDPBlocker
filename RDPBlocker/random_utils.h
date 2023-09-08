@@ -4,6 +4,8 @@
 #include <random>
 #include <string>
 
+int random_int(const int min, const int max);
+
 std::string random_string(
     const unsigned int count,
     const std::string& chars_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
