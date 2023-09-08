@@ -4,7 +4,7 @@ namespace firewall_controller
 {
 std::shared_ptr<WCHAR> ConvertStdStringToSystemString(const std::string& src)
 {
-    std::wstring ws_src = boost::locale::conv::to_utf<wchar_t>(src, "UTF-8");
+    std::wstring ws_src = utf_to_utf<wchar_t>(src);
     const OLECHAR* bstr_ptr = static_cast<const OLECHAR*>(ws_src.c_str());
     std::shared_ptr<WCHAR> ptr(static_cast<BSTR>(SysAllocString(bstr_ptr)),
                                SysFreeString);
@@ -14,7 +14,7 @@ std::shared_ptr<WCHAR> ConvertStdStringToSystemString(const std::string& src)
 std::string ConvertSystemStringToStdString(const BSTR ptr)
 {
     std::wstring ws_src(ptr);
-    std::string src = boost::locale::conv::utf_to_utf<char>(ws_src);
+    std::string src = utf_to_utf<char>(ws_src);
     return src;
 }
 
@@ -312,9 +312,9 @@ bool DeleteRulesByRegex(const std::string& expr)
             {
                 std::string string_rule_name =
                     ConvertSystemStringToStdString(rule_name.m_str);
-                if (regex_find_match(find_expr, string_rule_name) == true)
+                if (regex_is_match(find_expr, string_rule_name) == true)
                 {
-                    g_logger->debug("Remove rule: ", string_rule_name);
+                    g_logger->debug("Remove rule : {}", string_rule_name);
                     vt_wait_delete.push_back(rule_name);
                 }
             }
