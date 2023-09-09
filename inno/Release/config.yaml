@@ -8,7 +8,7 @@ block:
   expire_time: 900
   # Random delay range
   random_delay_min: 0
-  random_delay_max: 10
+  random_delay_max: 30
 workstation_name:
   # Eanble check client workstation name when user logs in.
   # Block if it is different from the workstation name of the first login.
