@@ -165,9 +165,10 @@ begin
     begin
         Log('ssInstall');
         ServiceWrapperCommand('stop {#ServiceWrapperConfigName}');
-        if (ChkForceSecurityLayer.Checked) then
+        if (ChkForceNetworkUserAuth.Checked) then
         begin
         RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services', 'UserAuthentication', 1);
+        RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp', 'UserAuthentication', 1);
         end;
         if (ChkForceSecurityLayer.Checked) then
         begin
