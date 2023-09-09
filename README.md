@@ -36,16 +36,27 @@ The configuration file can be changed according to the user's needs.
 Example :
 
 ```YAML
-# Blocking Threshold
-# IP addresses will be blocked when an incorrect account or password is entered within a specified period of time greater than a threshold value.
-block_threshold: 3
-# Blocking time in the seconds.
-block_time: 600
+block:
+  # Blocking Threshold
+  # IP addresses will be blocked when an incorrect account or password is entered within a specified period of time greater than a threshold value.
+  threshold: 3
+  # Blocking time in the seconds.
+  block_time: 600
+  # Record expiration time
+  expire_time: 900
+  # Random delay range
+  random_delay_min: 0
+  random_delay_max: 10
 workstation_name:
-  # Check client workstation name when user logs in.
+  # Eanble check client workstation name when user logs in.
   # Block if it is different from the workstation name of the first login.
   # default: false
-  check: false
+  enable_check: false
+  # Check user bind table
+  check_bind: true
+  # If the login workstation name is not in the bind table.
+  # it will be automatically bind.
+  auto_bind: true
   # Pre-bind workstation name
   user_bind:
     # Format
@@ -68,10 +79,19 @@ IP_Address:
   # Addresses in the whitelist will not be subject to any restrictions.
   # Note that the expression is a regular expression.
   whitelist:
-    - 127\.0\.0\..*
-    - ^192\.168.*
-    - ^172\.(1[6-9]|2[0-9]|3[0-1])\..*
-    - ^10\..*
+    # 0.0.0.0–0.255.255.255
+    - ^0\..*$
+    # 10.0.0.0–10.255.255.255
+    - ^10\..*$
+    # 100.64.0.0–100.127.255.255
+    - ^100\.(([6-9][4-9])|(1[0-2][0-7])).*$
+    # 127.0.0.0–127.255.255.255
+    - ^127\..*$
+    # 172.16.0.0–172.31.255.255
+    - ^172\.((1[6-9])|(2[0-9])|(3[0-1]))\..*$
+    # 192.168.0.0–192.168.255.255
+    - ^192\.168\..*$
+
 ```
 
 If users need, they can also download the zip package to configure and install it by themselves.
