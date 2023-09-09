@@ -14,6 +14,7 @@
 #include <boost/nowide/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/thread.hpp>
+#include <boost/version.hpp>
 
 #include "PECheckSum.h"
 #include "application_config.h"
@@ -399,9 +400,11 @@ void prase_argv(int argc, char* argv[])
         }
         if (var_map.count("version") != 0)
         {
-            std::cout << "RDPBlocker info" << std::endl;
-            std::cout << "Version: " << g_config.m_build_version << std::endl;
-            std::cout << "Build Date: " << g_config.m_build_date << std::endl;
+            std::cout << "RDPBlocker build info" << std::endl;
+            std::cout << "Application version: " << g_config.m_build_version << std::endl;
+            std::cout << "Build date: " << g_config.m_build_date << std::endl;
+            std::cout << "Boost lib: " << BOOST_LIB_VERSION << std::endl;
+            
             std::exit(APPLICATION_EXIT_CODE::SUCCESS);
         }
         if (var_map.count("config") == 0)
