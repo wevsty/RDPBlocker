@@ -127,7 +127,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalOptions>/utf-8 /D "NOMINMAX" %(AdditionalOptions)</AdditionalOptions>
       <SDLCheck>true</SDLCheck>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

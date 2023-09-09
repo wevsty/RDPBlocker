@@ -2,6 +2,7 @@
 #define __PE_FILE_CHECKSUM__
 
 #include <string>
+#include <cassert>
 
 #include <windows.h>
 

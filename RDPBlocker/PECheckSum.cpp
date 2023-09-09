@@ -3,6 +3,7 @@
 bool PECheckSum(const std::wstring& file_path)
 {
 #ifdef _DEBUG
+    assert(file_path.empty() == false);
     return true;
 #else
     DWORD header_checksum = 0;
