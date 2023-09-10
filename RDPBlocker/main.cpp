@@ -163,9 +163,8 @@ void BlockRemoteAddressesWhenLoginFailed(
     }
 }
 
-void BlockRemoteAddressesWhenLoginSucceed(
-    boost::asio::io_context& io_context,
-    const std::string& remote_address)
+void BlockRemoteAddressesWhenLoginSucceed(boost::asio::io_context& io_context,
+                                          const std::string& remote_address)
 {
     // 校验IP地址
     if (IsIPAddress(remote_address) == false)
@@ -240,7 +239,7 @@ void ProcessRDPAuthFailedEvent(boost::asio::io_context* io_context_ptr)
         }
         g_logger->info("Auth failed : {}", remote_ip_address);
         BlockRemoteAddressesWhenLoginFailed(io_context, remote_address_map,
-                                          remote_ip_address);
+                                            remote_ip_address);
     }
 }
 
@@ -319,11 +318,10 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
             continue;
         }
 
-        if (g_config.m_workstation_name_config.exists_bind_record(user_name) == false)
+        if (g_config.m_workstation_name_config.exists_bind_record(user_name) ==
+            false)
         {
             // 不存在绑定记录
-            // 可能为首次登录
-            // g_logger->info("First login {} : {}", user_name, workstation_name);
             if (g_config.m_workstation_name_config.m_auto_bind == true)
             {
                 // 创建绑定关系
@@ -333,10 +331,9 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
                                workstation_name);
             }
         }
-        
+
         if (g_config.m_workstation_name_config.check_bind_record(
-            user_name, workstation_name) ==
-            true)
+                user_name, workstation_name) == true)
         {
             // 允许登录
             g_logger->info("Allow login {} : {}", user_name, workstation_name);
@@ -348,7 +345,7 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
             g_logger->info("Block login {} : {}", user_name, workstation_name);
             BlockRemoteAddressesWhenLoginSucceed(io_context, remote_ip_address);
         }
-    } // while loop
+    }  // while loop
 }
 
 // 确保程序目录为工作目录
@@ -401,10 +398,14 @@ void prase_argv(int argc, char* argv[])
         if (var_map.count("version") != 0)
         {
             std::cout << "RDPBlocker build info" << std::endl;
-            std::cout << "Application version: " << g_config.m_build_version << std::endl;
+            std::cout << "Application version: " << g_config.m_build_version
+                      << std::endl;
             std::cout << "Build date: " << g_config.m_build_date << std::endl;
+#if defined(_MSC_VER)
+            std::cout << "Build compiler: " << _MSC_VER << std::endl;
+#endif
             std::cout << "Boost lib: " << BOOST_LIB_VERSION << std::endl;
-            
+
             std::exit(APPLICATION_EXIT_CODE::SUCCESS);
         }
         if (var_map.count("config") == 0)
@@ -427,6 +428,7 @@ void prase_argv(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+    // 使filesystem支持UTF-8
     boost::nowide::nowide_filesystem();
     // 确保程序目录为工作目录
     ensure_work_dir();

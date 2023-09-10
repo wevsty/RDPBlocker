@@ -8,7 +8,7 @@ ApplicationBlockConfig::ApplicationBlockConfig()
       m_block_time(600),
       m_expire_time(900),
       m_random_delay_min(0),
-      m_random_delay_max(10)
+      m_random_delay_max(30)
 {
 }
 
@@ -93,7 +93,8 @@ bool ApplicationWorkstationNameConfig::check_bind_record(
     if (it != m_bind_table.end())
     {
         // 说明存在记录
-        if (it->second == workstation_name)
+        const std::string& regexp = it->second;
+        if (regex_is_match(regexp, workstation_name))
         {
             return true;
         }
@@ -155,7 +156,7 @@ bool ApplicationConfig::load_config_file()
         m_block.m_block_time = node_block["block_time"].as<int>();
         m_block.m_expire_time = node_block["expire_time"].as<int>();
         m_block.m_random_delay_min = node_block["random_delay_min"].as<int>();
-        m_block.m_random_delay_max = node_block["random_delay_min"].as<int>();
+        m_block.m_random_delay_max = node_block["random_delay_max"].as<int>();
 
         // 主机名配置
         const YAML::Node& node_workstation_name = root_node["workstation_name"];
