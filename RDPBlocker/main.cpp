@@ -402,7 +402,8 @@ void prase_argv(int argc, char* argv[])
                       << std::endl;
             std::cout << "Build date: " << g_config.m_build_date << std::endl;
 #if defined(_MSC_VER)
-            std::cout << "Build compiler: " << _MSC_VER << std::endl;
+            std::cout << "Build compiler: "
+                      << "MSVC " << _MSC_VER << std::endl;
 #endif
             std::cout << "Boost lib: " << BOOST_LIB_VERSION << std::endl;
 
