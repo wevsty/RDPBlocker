@@ -90,11 +90,19 @@ void CreateBlockRemoteAddressPlan(boost::asio::io_context& io_context,
 
     std::shared_ptr<BlockRemoteAddressTask> block_task =
         std::make_shared<BlockRemoteAddressTask>(io_context);
-    // 添加阻止规则
-    block_task->AsyncBlock(rule_name, remote_address);
 
-    // 超时自动删除规则
-    block_task->AsyncUnblock(rule_name, block_time);
+    if (block_time > 0)
+    {
+        // 添加阻止规则
+        block_task->AsyncBlock(rule_name, remote_address);
+
+        // 超时自动删除规则
+        block_task->AsyncUnblock(rule_name, block_time);
+    }
+    else
+    {
+        g_logger->warn("block_time <= 0");
+    }
 }
 
 // 验证IP合法性
