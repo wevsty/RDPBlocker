@@ -67,6 +67,7 @@ BEGIN
     BEGIN
         BLOCK "080004b0"
         BEGIN
+            VALUE "FileDescription", "RDPBlocker main program"
             VALUE "FileVersion", APPLICATION_FILE_VERSION_STRING
             VALUE "InternalName", "RDPBlocker.exe"
             VALUE "LegalCopyright", "Copyright (C) 2023 wevsty"
