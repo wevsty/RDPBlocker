@@ -7,9 +7,9 @@
 #include <netfw.h>
 #include <windows.h>
 
-#include "utf_convert.h"
 #include "boost_regex_utils.h"
 #include "logger.h"
+#include "utf_convert.h"
 
 namespace firewall_controller
 {

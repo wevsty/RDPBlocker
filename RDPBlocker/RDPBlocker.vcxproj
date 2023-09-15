@@ -167,7 +167,7 @@
     <ClCompile Include="boost_xml_utils.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="application_mutex.cpp" />
-    <ClCompile Include="PECheckSum.cpp" />
+    <ClCompile Include="pe_checksum.cpp" />
     <ClCompile Include="program_path_utils.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="random_utils.cpp" />
@@ -181,7 +181,7 @@
     <ClInclude Include="application_config.h" />
     <ClInclude Include="concurrent_queue.h" />
     <ClInclude Include="application_mutex.h" />
-    <ClInclude Include="PECheckSum.h" />
+    <ClInclude Include="pe_checksum.h" />
     <ClInclude Include="program_path_utils.h" />
     <ClInclude Include="remote_address_status.h" />
     <ClInclude Include="resource.h" />

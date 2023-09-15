@@ -16,7 +16,7 @@ class RemoteAddressStatus
     // 阻挡时间
     int m_block_time;
     Timer m_blocked_timer;
-    
+
     public:
     RemoteAddressStatus();
     ~RemoteAddressStatus();
@@ -24,7 +24,6 @@ class RemoteAddressStatus
     int get_count() const;
     void set_count(const int count);
 
-    
     int get_expire_time() const;
     void set_expire_time(const int expired_time);
     void reset_expire_timer();

@@ -1,6 +1,6 @@
-#include "PECheckSum.h"
+#include "pe_checksum.h"
 
-bool PECheckSum(const std::wstring& file_path)
+bool check_pe_checksum(const std::wstring& file_path)
 {
 #ifdef _DEBUG
     assert(file_path.empty() == false);

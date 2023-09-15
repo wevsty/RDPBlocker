@@ -16,13 +16,13 @@
 #include <boost/thread.hpp>
 #include <boost/version.hpp>
 
-#include "PECheckSum.h"
 #include "application_config.h"
 #include "application_exit_code.h"
 #include "application_mutex.h"
 #include "boost_xml_utils.h"
 #include "firewall_controller.h"
 #include "logger.h"
+#include "pe_checksum.h"
 #include "program_path_utils.h"
 #include "random_utils.h"
 #include "remote_address_status.h"
@@ -49,37 +49,37 @@ class BlockRemoteAddressTask
     {
     }
 
-    void Block(const std::string& rule_name, const std::string& block_address)
+    void block(const std::string& rule_name, const std::string& block_address)
     {
         g_logger->info("Add rule {}", rule_name);
         firewall_controller::BlockInboundIP(rule_name, block_address);
     }
 
-    void Unblock(const std::string& rule_name)
+    void unblock(const std::string& rule_name)
     {
         g_logger->info("Delete rule {}", rule_name);
         firewall_controller::DeleteRuleByName(rule_name);
     }
 
-    void AsyncBlock(const std::string& rule_name,
-                    const std::string& block_address)
+    void async_block(const std::string& rule_name,
+                     const std::string& block_address)
     {
-        m_io_context.post(boost::bind(&BlockRemoteAddressTask::Block,
+        m_io_context.post(boost::bind(&BlockRemoteAddressTask::block,
                                       shared_from_this(), rule_name,
                                       block_address));
     }
 
-    void AsyncUnblock(const std::string& rule_name, const int delay_time)
+    void async_unblock(const std::string& rule_name, const int delay_time)
     {
         m_wait_timer.expires_from_now(std::chrono::seconds(delay_time));
-        m_wait_timer.async_wait(boost::bind(&BlockRemoteAddressTask::Unblock,
+        m_wait_timer.async_wait(boost::bind(&BlockRemoteAddressTask::unblock,
                                             shared_from_this(), rule_name));
     }
 };
 
-void CreateBlockRemoteAddressPlan(boost::asio::io_context& io_context,
-                                  const std::string& remote_address,
-                                  const int block_time)
+void create_block_remote_address_tasks(boost::asio::io_context& io_context,
+                                       const std::string& remote_address,
+                                       const int block_time)
 {
     // 常量
     constexpr unsigned int RULE_RANDOM_CHARS_LENGTH = 8;
@@ -94,10 +94,10 @@ void CreateBlockRemoteAddressPlan(boost::asio::io_context& io_context,
     if (block_time > 0)
     {
         // 添加阻止规则
-        block_task->AsyncBlock(rule_name, remote_address);
+        block_task->async_block(rule_name, remote_address);
 
         // 超时自动删除规则
-        block_task->AsyncUnblock(rule_name, block_time);
+        block_task->async_unblock(rule_name, block_time);
     }
     else
     {
@@ -106,12 +106,12 @@ void CreateBlockRemoteAddressPlan(boost::asio::io_context& io_context,
 }
 
 // 验证IP合法性
-bool IsIPAddress(const std::string& data)
+bool is_vaild_ip_address(const std::string& value)
 {
     try
     {
         boost::asio::ip::address addr =
-            boost::asio::ip::address::from_string(data);
+            boost::asio::ip::address::from_string(value);
         return true;
     }
     catch (const boost::system::system_error& error)
@@ -121,13 +121,13 @@ bool IsIPAddress(const std::string& data)
     }
 }
 
-void BlockRemoteAddressesWhenLoginFailed(
+void block_remote_addresses_when_login_failed(
     boost::asio::io_context& io_context,
     std::map<std::string, RemoteAddressStatus>& remote_address_map,
     const std::string& remote_address)
 {
     // 校验IP地址
-    if (IsIPAddress(remote_address) == false)
+    if (is_vaild_ip_address(remote_address) == false)
     {
         g_logger->info("Invalid address : {}", remote_address);
         return;
@@ -160,8 +160,8 @@ void BlockRemoteAddressesWhenLoginFailed(
         {
             g_logger->info("Block address : {}", remote_address);
             const int n_block_time = g_config.m_block.block_time();
-            CreateBlockRemoteAddressPlan(io_context, remote_address,
-                                         n_block_time);
+            create_block_remote_address_tasks(io_context, remote_address,
+                                              n_block_time);
             find_iter->second.set_block_time(n_block_time);
         }
         else
@@ -171,11 +171,12 @@ void BlockRemoteAddressesWhenLoginFailed(
     }
 }
 
-void BlockRemoteAddressesWhenLoginSucceed(boost::asio::io_context& io_context,
-                                          const std::string& remote_address)
+void block_remote_addresses_when_login_succeed(
+    boost::asio::io_context& io_context,
+    const std::string& remote_address)
 {
     // 校验IP地址
-    if (IsIPAddress(remote_address) == false)
+    if (is_vaild_ip_address(remote_address) == false)
     {
         g_logger->info("Invalid address : {}", remote_address);
         return;
@@ -190,7 +191,7 @@ void BlockRemoteAddressesWhenLoginSucceed(boost::asio::io_context& io_context,
     // 阻止地址
     g_logger->info("Block address : {}", remote_address);
     const int n_block_time = g_config.m_block.block_time();
-    CreateBlockRemoteAddressPlan(io_context, remote_address, n_block_time);
+    create_block_remote_address_tasks(io_context, remote_address, n_block_time);
 }
 
 void delete_expire_remote_address(
@@ -215,7 +216,7 @@ void delete_expire_remote_address(
     }
 }
 
-void ProcessRDPAuthFailedEvent(boost::asio::io_context* io_context_ptr)
+void process_rdp_auth_failed_event(boost::asio::io_context* io_context_ptr)
 {
     boost::asio::io_context& io_context = *io_context_ptr;
     std::map<std::string, RemoteAddressStatus> remote_address_map;
@@ -246,12 +247,12 @@ void ProcessRDPAuthFailedEvent(boost::asio::io_context* io_context_ptr)
             continue;
         }
         g_logger->info("Auth failed : {}", remote_ip_address);
-        BlockRemoteAddressesWhenLoginFailed(io_context, remote_address_map,
-                                            remote_ip_address);
+        block_remote_addresses_when_login_failed(io_context, remote_address_map,
+                                                 remote_ip_address);
     }
 }
 
-std::string GetLocalWorkstationName()
+std::string get_local_workstation_name()
 {
     DWORD dwSize = dwSize = MAX_COMPUTERNAME_LENGTH + 1;
     std::shared_ptr<WCHAR[]> buffer = std::make_shared<WCHAR[]>(dwSize);
@@ -261,10 +262,10 @@ std::string GetLocalWorkstationName()
     return hostname;
 }
 
-void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
+void process_rdp_auth_succeed_event(boost::asio::io_context* io_context_ptr)
 {
     boost::asio::io_context& io_context = *io_context_ptr;
-    std::string local_hostname = GetLocalWorkstationName();
+    std::string local_hostname = get_local_workstation_name();
     g_logger->info("Subscribe RDPAuthSucceedEvent.");
     RDPAuthSucceedEvent auth_succeed_evt;
     // 订阅RDP登录失败事件
@@ -314,7 +315,8 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
             // 说明在阻挡名单内
             g_logger->info("Blocklist login {} : {}", user_name,
                            workstation_name);
-            BlockRemoteAddressesWhenLoginSucceed(io_context, remote_ip_address);
+            block_remote_addresses_when_login_succeed(io_context,
+                                                      remote_ip_address);
             continue;
         }
         // 进行绑定检查
@@ -351,7 +353,8 @@ void ProcessRDPAuthSucceedEvent(boost::asio::io_context* io_context_ptr)
         {
             // 不允许登录
             g_logger->info("Block login {} : {}", user_name, workstation_name);
-            BlockRemoteAddressesWhenLoginSucceed(io_context, remote_ip_address);
+            block_remote_addresses_when_login_succeed(io_context,
+                                                      remote_ip_address);
         }
     }  // while loop
 }
@@ -368,7 +371,7 @@ void check_program_file()
 {
     std::string self_path = self_file_path();
     std::wstring ws_path = utf_to_utf<wchar_t>(self_path);
-    bool status = PECheckSum(ws_path);
+    bool status = check_pe_checksum(ws_path);
     if (status == false)
     {
         std::cout << "Check program file failed" << std::endl;
@@ -453,7 +456,7 @@ int main(int argc, char* argv[])
 
     // 确保系统中只有一个RDPBlocker运行，以免互相干扰。
     ApplicationMutex app_mutex;
-    if (app_mutex.Lock(g_config.m_mutex_name) == false)
+    if (app_mutex.lock(g_config.m_mutex_name) == false)
     {
         g_logger->warn("RDPBlocker already running in the system");
         return APPLICATION_EXIT_CODE::FAILED;
@@ -490,13 +493,13 @@ int main(int argc, char* argv[])
     // 启动事件订阅线程
     // 启动登陆失败事件处理线程
     boost::thread thread_process_auth_failed_event(
-        boost::bind(&ProcessRDPAuthFailedEvent, &io_context));
+        boost::bind(&process_rdp_auth_failed_event, &io_context));
     // 检查配置是否启用工作站名检查功能
     if (g_config.m_workstation_name_config.m_enable_check)
     {
         // 启动登陆成功事件处理线程
         boost::thread thread_process_auth_succeed_event(
-            boost::bind(&ProcessRDPAuthSucceedEvent, &io_context));
+            boost::bind(&process_rdp_auth_succeed_event, &io_context));
     }
 
     io_thread.join();

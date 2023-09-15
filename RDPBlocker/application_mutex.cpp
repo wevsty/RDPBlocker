@@ -1,6 +1,6 @@
 #include "application_mutex.h"
 
-bool ApplicationMutex::Create(const std::string& mutex_name)
+bool ApplicationMutex::create(const std::string& mutex_name)
 {
     std::wstring ws_mutex_name = utf_to_utf<WCHAR>(mutex_name);
     m_handle = CreateMutexW(NULL, FALSE, ws_mutex_name.c_str());
@@ -11,7 +11,7 @@ bool ApplicationMutex::Create(const std::string& mutex_name)
     return true;
 }
 
-bool ApplicationMutex::Open(const std::string& mutex_name)
+bool ApplicationMutex::open(const std::string& mutex_name)
 {
     std::wstring ws_mutex_name = utf_to_utf<WCHAR>(mutex_name);
     m_handle = OpenMutexW(MUTEX_ALL_ACCESS, FALSE, ws_mutex_name.c_str());
@@ -22,7 +22,7 @@ bool ApplicationMutex::Open(const std::string& mutex_name)
     return true;
 }
 
-void ApplicationMutex::Close()
+void ApplicationMutex::close()
 {
     if (m_handle != NULL)
     {
@@ -31,13 +31,13 @@ void ApplicationMutex::Close()
     }
 }
 
-bool ApplicationMutex::IsExist(const std::string& mutex_name)
+bool ApplicationMutex::is_exist(const std::string& mutex_name)
 {
     if (m_handle != NULL)
     {
         return true;
     }
-    bool bStatus = Open(mutex_name);
+    bool bStatus = open(mutex_name);
     if (bStatus == false)
     {
         DWORD dwCode = GetLastError();
@@ -55,20 +55,20 @@ ApplicationMutex::ApplicationMutex() : m_handle(NULL)
 
 ApplicationMutex::~ApplicationMutex()
 {
-    Close();
+    close();
 }
 
-bool ApplicationMutex::Lock(const std::string& mutex_name)
+bool ApplicationMutex::lock(const std::string& mutex_name)
 {
-    if (IsExist(mutex_name) == true)
+    if (is_exist(mutex_name) == true)
     {
         return false;
     }
-    bool bRet = Create(mutex_name);
+    bool bRet = create(mutex_name);
     return bRet;
 }
 
-void ApplicationMutex::Unlock()
+void ApplicationMutex::unlock()
 {
-    Close();
+    close();
 }
