@@ -1,15 +1,16 @@
-#ifndef __APPLICATION_CONFIG__
-#define __APPLICATION_CONFIG__
+#ifndef __APPLICATION_CONFIG_H__
+#define __APPLICATION_CONFIG_H__
 
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include <boost/nowide/fstream.hpp>
+#include "spdlog/spdlog.h"
 
 #include "boost_regex_utils.h"
-#include "logger.h"
 #include "random_utils.h"
 #include "version.h"
 #include "yaml.h"
@@ -17,12 +18,9 @@
 class ApplicationBlockConfig
 {
     public:
-    // 阻挡阈值
-    int m_threshold;
     // 阻挡时间
     int m_block_time;
-    // 记录过期时间
-    int m_expire_time;
+
     // 随机延迟
     int m_random_delay_min;
     int m_random_delay_max;
@@ -31,6 +29,21 @@ class ApplicationBlockConfig
     ~ApplicationBlockConfig();
 
     int block_time() const;
+};
+
+class ApplicationFailBanConfig
+{
+    public:
+    // 启用开关
+    bool m_enable;
+    // 阻挡阈值
+    int m_threshold;
+    // 记录过期时间
+    int m_expire_time;
+
+    ApplicationFailBanConfig();
+    ~ApplicationFailBanConfig();
+
     int expire_time() const;
 };
 
@@ -69,6 +82,21 @@ class ApplicationWorkstationNameConfig
                            const std::string& workstation_name) const;
 };
 
+class ApplicationLoggerConfig
+{
+    public:
+    const std::string m_pattern;
+    spdlog::level::level_enum m_level;
+
+    ApplicationLoggerConfig();
+    ~ApplicationLoggerConfig();
+
+    void set_level(const std::string& level);
+    std::string get_level() const;
+
+    void apply(std::shared_ptr<spdlog::logger>& logger);
+};
+
 class ApplicationIPConfig
 {
     public:
@@ -79,7 +107,7 @@ class ApplicationIPConfig
     ~ApplicationIPConfig();
 
     // 验证IP是否在白名单中
-    bool is_white_address(const std::string& ip_address);
+    bool is_white_address(const std::string& ip_address) const;
 };
 
 class ApplicationConfig
@@ -97,11 +125,14 @@ class ApplicationConfig
     // 阻挡配置
     ApplicationBlockConfig m_block;
 
+    // 登录失败阻挡配置
+    ApplicationFailBanConfig m_fail_ban;
+
     // 工作站名配置
     ApplicationWorkstationNameConfig m_workstation_name_config;
 
     // log 配置
-    LoggerConfig m_logger_setting;
+    ApplicationLoggerConfig m_logger_config;
 
     // IP 配置
     ApplicationIPConfig m_ip_config;
@@ -115,6 +146,7 @@ class ApplicationConfig
                                  const std::string& filepath);
 };
 
+// 全局配置
 extern ApplicationConfig g_config;
 
-#endif  //__APPLICATION_CONFIG__
+#endif  //__APPLICATION_CONFIG_H__

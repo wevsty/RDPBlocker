@@ -1,5 +1,5 @@
-#ifndef __SPDLOG_LOGGER__
-#define __SPDLOG_LOGGER__
+#ifndef __SPDLOG_LOGGER_H__
+#define __SPDLOG_LOGGER_H__
 
 #include <algorithm>
 #include <chrono>
@@ -14,22 +14,7 @@
 // 全局 logger
 extern std::shared_ptr<spdlog::logger> g_logger;
 
-class LoggerConfig
-{
-    public:
-    const std::string m_pattern;
-    spdlog::level::level_enum m_level;
-
-    LoggerConfig();
-    ~LoggerConfig();
-
-    void set_level(const std::string& level);
-    std::string get_level() const;
-
-    void apply();
-};
-
 // 初始化logger
-void initialize_logger();
+void initialize_global_logger(std::shared_ptr<spdlog::logger>& logger);
 
-#endif  // __SPDLOG_LOGGER__
+#endif  // __SPDLOG_LOGGER_H__

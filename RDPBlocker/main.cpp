@@ -142,7 +142,7 @@ void block_remote_addresses_when_login_failed(
     auto find_iter = remote_address_map.find(remote_address);
     if (find_iter == remote_address_map.end())
     {
-        const int n_expire_time = g_config.m_block.expire_time();
+        const int n_expire_time = g_config.m_fail_ban.expire_time();
         RemoteAddressStatus st;
         st.set_expire_time(n_expire_time);
         remote_address_map[remote_address] = st;
@@ -154,7 +154,7 @@ void block_remote_addresses_when_login_failed(
     int temp_count = find_iter->second.get_count() + 1;
     find_iter->second.set_count(temp_count);
     // 判断是否达到阻挡阈值
-    if (find_iter->second.get_count() >= g_config.m_block.m_threshold)
+    if (find_iter->second.get_count() >= g_config.m_fail_ban.m_threshold)
     {
         if (find_iter->second.is_blocked() == false)
         {
@@ -429,6 +429,8 @@ void prase_argv(int argc, char* argv[])
         {
             std::exit(APPLICATION_EXIT_CODE::FAILED);
         }
+        // 应用 logger 设置
+        g_config.m_logger_config.apply(g_logger);
     }
     catch (const boost::program_options::error& err)
     {
@@ -449,7 +451,7 @@ int main(int argc, char* argv[])
     check_program_file();
 
     // 初始化logger
-    initialize_logger();
+    initialize_global_logger(g_logger);
 
     // 解析命令行参数
     prase_argv(argc, argv);
@@ -491,9 +493,15 @@ int main(int argc, char* argv[])
         boost::bind(&boost::asio::io_context::run, &io_context));
 
     // 启动事件订阅线程
-    // 启动登陆失败事件处理线程
-    boost::thread thread_process_auth_failed_event(
-        boost::bind(&process_rdp_auth_failed_event, &io_context));
+
+    // 检查配置是否启用工作站名检查功能
+    if (g_config.m_fail_ban.m_enable)
+    {
+        // 启动登陆失败事件处理线程
+        boost::thread thread_process_auth_failed_event(
+            boost::bind(&process_rdp_auth_failed_event, &io_context));
+    }
+
     // 检查配置是否启用工作站名检查功能
     if (g_config.m_workstation_name_config.m_enable_check)
     {

@@ -1,41 +1,10 @@
 #include "logger.h"
 
+// 全局logger
 std::shared_ptr<spdlog::logger> g_logger = spdlog::default_logger();
 
-LoggerConfig::LoggerConfig()
-    : m_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v"), m_level(spdlog::level::debug)
-{
-}
-
-LoggerConfig::~LoggerConfig()
-{
-}
-
-void LoggerConfig::set_level(const std::string& level_string)
-{
-    // 转化为小写
-    std::string lower_level = level_string;
-    std::for_each(lower_level.begin(), lower_level.end(),
-                  [](char& c)
-                  {
-                      c = static_cast<char>(std::tolower(c));
-                  });
-    m_level = spdlog::level::from_str(lower_level);
-}
-
-std::string LoggerConfig::get_level() const
-{
-    return std::string(spdlog::level::to_short_c_str(m_level));
-}
-
-void LoggerConfig::apply()
-{
-    // g_logger->set_pattern(m_pattern);
-    g_logger->set_level(m_level);
-}
-
 // 初始化全局logger
-void initialize_logger()
+void initialize_global_logger(std::shared_ptr<spdlog::logger>& logger)
 {
     try
     {
@@ -59,7 +28,7 @@ void initialize_logger()
         // 设置默认logger
         spdlog::set_default_logger(shared_logger);
 
-        g_logger = shared_logger;
+        logger = shared_logger;
     }
     catch (const spdlog::spdlog_ex& err)
     {

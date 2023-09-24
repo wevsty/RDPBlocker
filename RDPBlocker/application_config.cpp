@@ -4,9 +4,7 @@
 ApplicationConfig g_config = ApplicationConfig();
 
 ApplicationBlockConfig::ApplicationBlockConfig()
-    : m_threshold(3),
-      m_block_time(600),
-      m_expire_time(900),
+    : m_block_time(600),
       m_random_delay_min(0),
       m_random_delay_max(30)
 {
@@ -22,10 +20,18 @@ int ApplicationBlockConfig::block_time() const
     return m_block_time + random_delay;
 }
 
-int ApplicationBlockConfig::expire_time() const
+ApplicationFailBanConfig::ApplicationFailBanConfig()
+    : m_enable(true), m_threshold(3),m_expire_time(900)
 {
-    int random_delay = random_int(m_random_delay_min, m_random_delay_max);
-    return m_expire_time + random_delay;
+}
+
+ApplicationFailBanConfig::~ApplicationFailBanConfig()
+{
+}
+
+int ApplicationFailBanConfig::expire_time() const
+{
+    return m_expire_time;
 }
 
 ApplicationWorkstationNameConfig::ApplicationWorkstationNameConfig()
@@ -101,6 +107,37 @@ bool ApplicationWorkstationNameConfig::check_bind_record(
     }
     return false;
 }
+ApplicationLoggerConfig::ApplicationLoggerConfig()
+    : m_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v"), m_level(spdlog::level::debug)
+{
+}
+
+ApplicationLoggerConfig::~ApplicationLoggerConfig()
+{
+}
+
+void ApplicationLoggerConfig::set_level(const std::string& level_string)
+{
+    // 转化为小写
+    std::string lower_level = level_string;
+    std::for_each(lower_level.begin(), lower_level.end(),
+                  [](char& c)
+                  {
+                      c = static_cast<char>(std::tolower(c));
+                  });
+    m_level = spdlog::level::from_str(lower_level);
+}
+
+std::string ApplicationLoggerConfig::get_level() const
+{
+    return std::string(spdlog::level::to_short_c_str(m_level));
+}
+
+void ApplicationLoggerConfig::apply(std::shared_ptr<spdlog::logger>& logger)
+{
+    // logger->set_pattern(m_pattern);
+    logger->set_level(m_level);
+}
 
 ApplicationIPConfig::ApplicationIPConfig() : m_whitelist()
 {
@@ -110,7 +147,7 @@ ApplicationIPConfig::~ApplicationIPConfig()
 {
 }
 
-bool ApplicationIPConfig::is_white_address(const std::string& ip_address)
+bool ApplicationIPConfig::is_white_address(const std::string& ip_address) const
 {
     for (const auto& expression : m_whitelist)
     {
@@ -129,8 +166,9 @@ ApplicationConfig::ApplicationConfig()
       m_build_date(__DATE__ " " __TIME__),
       m_file_path("config.yaml"),
       m_block(),
+      m_fail_ban(),
       m_workstation_name_config(),
-      m_logger_setting(),
+      m_logger_config(),
       m_ip_config()
 {
 }
@@ -152,11 +190,15 @@ bool ApplicationConfig::load_config_file()
 
         // 阻挡配置
         const YAML::Node& node_block = root_node["block"];
-        m_block.m_threshold = node_block["threshold"].as<int>();
         m_block.m_block_time = node_block["block_time"].as<int>();
-        m_block.m_expire_time = node_block["expire_time"].as<int>();
         m_block.m_random_delay_min = node_block["random_delay_min"].as<int>();
         m_block.m_random_delay_max = node_block["random_delay_max"].as<int>();
+
+        // 失败阻挡配置
+        const YAML::Node& node_failban = root_node["failban"];
+        m_fail_ban.m_enable = node_failban["enable"].as<bool>();
+        m_fail_ban.m_threshold = node_failban["threshold"].as<int>();
+        m_fail_ban.m_expire_time = node_failban["expire_time"].as<int>();
 
         // 主机名配置
         const YAML::Node& node_workstation_name = root_node["workstation_name"];
@@ -166,6 +208,7 @@ bool ApplicationConfig::load_config_file()
             node_workstation_name["check_bind"].as<bool>();
         m_workstation_name_config.m_auto_bind =
             node_workstation_name["auto_bind"].as<bool>();
+
         // 载入绑定列表
         const YAML::Node& node_user_bind = node_workstation_name["user_bind"];
         for (YAML::const_iterator it = node_user_bind.begin();
@@ -199,8 +242,7 @@ bool ApplicationConfig::load_config_file()
         // 日志配置
         const YAML::Node& node_logs = root_node["log"];
         std::string level_string = node_logs["level"].as<std::string>();
-        m_logger_setting.set_level(level_string);
-        m_logger_setting.apply();
+        m_logger_config.set_level(level_string);
 
         // IP配置
         const YAML::Node& node_ip_address = root_node["IP_Address"];
