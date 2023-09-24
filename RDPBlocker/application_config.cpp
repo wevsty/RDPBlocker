@@ -4,9 +4,7 @@
 ApplicationConfig g_config = ApplicationConfig();
 
 ApplicationBlockConfig::ApplicationBlockConfig()
-    : m_block_time(600),
-      m_random_delay_min(0),
-      m_random_delay_max(30)
+    : m_block_time(600), m_random_delay_min(0), m_random_delay_max(30)
 {
 }
 
@@ -21,7 +19,7 @@ int ApplicationBlockConfig::block_time() const
 }
 
 ApplicationFailBanConfig::ApplicationFailBanConfig()
-    : m_enable(true), m_threshold(3),m_expire_time(900)
+    : m_enable(true), m_threshold(3), m_expire_time(900)
 {
 }
 

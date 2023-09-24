@@ -1,11 +1,11 @@
 #ifndef __APPLICATION_CONFIG_H__
 #define __APPLICATION_CONFIG_H__
 
+#include <iostream>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
-#include <iostream>
 
 #include <boost/nowide/fstream.hpp>
 #include "spdlog/spdlog.h"
