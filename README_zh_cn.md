@@ -39,37 +39,52 @@ Windows 10 x64 或 Windows Server 2016 x64 以及更高版本。
 
 ```yaml
 block:
-  # Blocking Threshold
-  # IP addresses will be blocked when an incorrect account or password is entered within a specified period of time greater than a threshold value.
-  threshold: 3
+  # Firewall block time = block_time + random(random_delay_min, random_delay_max)
   # Blocking time in the seconds.
   block_time: 600
-  # Record expiration time
-  expire_time: 900
   # Random delay range
   random_delay_min: 0
-  random_delay_max: 10
+  random_delay_max: 30
+failban:
+  # Eanble failban function
+  # If the option is true, network logins exceeding the threshold will be blocked.
+  enable: true
+  # Threshold
+  # IP addresses will be blocked when an incorrect account or password is entered within a specified period of time greater than a threshold value.
+  threshold: 3
+  # Login failed record save expire time
+  # Recommended value is block_time*2
+  expire_time: 1200
 workstation_name:
+  # enable_check:
   # Eanble check client workstation name when user logs in.
-  # Block if it is different from the workstation name of the first login.
-  # default: false
+  # Default: false
   enable_check: false
+  # check_bind:
   # Check user bind table
+  # If check_bind is false, the bind check will be skipped
   check_bind: true
-  # If the login workstation name is not in the bind table.
-  # it will be automatically bind.
+  # auto_bind:
+  # Automatically bind the workstation name at the first login if is not in the bind table.
+  # This option is ignored if a binding regular expression already exists for the login username.
   auto_bind: true
-  # Pre-bind workstation name
+  # user_bind:
+  # UserName bind table
   user_bind:
-    # Format
-    # {UserName}: {WorkstationName}
-    root: DESKTOP-0000000
+    # Format:
+    # {UserName}: {WorkstationName regular expression}
+    # Example:
+    # root: "^DESKTOP-.*$"
+    # This will allow all workstation names beginning with "DESKTOP-" to login.
+    root: "^DESKTOP-.*$"
   # Workstation name blocklist
+  # Workstation name will be blocked from login if it is in the list.
   # Some third-party RDP clients do not send the workstation name to the server.
   # You can block third-party RDP client logins through such features.
   blocklist:
     - "-"
-  # Workstation name whitelist
+  # Workstation name whitelist.
+  # The name of the workstation in the list will allow logging into any account.
   whitelist:
     - DESKTOP-0000000
 log:
