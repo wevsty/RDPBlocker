@@ -1,7 +1,6 @@
 #ifndef __SPDLOG_LOGGER_H__
 #define __SPDLOG_LOGGER_H__
 
-#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <string>

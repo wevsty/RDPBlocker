@@ -1,11 +1,13 @@
 #ifndef __APPLICATION_CONFIG_H__
 #define __APPLICATION_CONFIG_H__
 
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
+#include <cctype>
 
 #include <boost/nowide/fstream.hpp>
 #include "spdlog/spdlog.h"
