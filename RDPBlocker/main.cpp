@@ -268,7 +268,7 @@ void process_rdp_auth_succeed_event(boost::asio::io_context* io_context_ptr)
     std::string local_hostname = get_local_workstation_name();
     g_logger->info("Subscribe RDPAuthSucceedEvent.");
     RDPAuthSucceedEvent auth_succeed_evt;
-    // 订阅RDP登录失败事件
+    // 订阅RDP登录成功事件
     if (auth_succeed_evt.Subscribe() != true)
     {
         g_logger->error("Subscribe RDPAuthSucceedEvent failed.");

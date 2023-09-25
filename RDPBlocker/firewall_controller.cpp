@@ -26,7 +26,8 @@ CComPtr<INetFwPolicy2> GetFireWallPolicy()
                          __uuidof(INetFwPolicy2), (void**)&pNetFwPolicy2);
     if (FAILED(hr))
     {
-        g_logger->error("CoCreateInstance failed 0x{:x}.", hr);
+        g_logger->error("CoCreateInstance failed 0x{0:x}.",
+                        static_cast<unsigned long>(hr));
         return NULL;
     }
     return pNetFwPolicy2;
@@ -39,7 +40,8 @@ CComPtr<INetFwRules> GetFireWallRules(CComPtr<INetFwPolicy2>& pPolicy)
     hr = pPolicy->get_Rules(&pFwRules);
     if (FAILED(hr))
     {
-        g_logger->error("INetFwRules::get_Rules failed 0x{:x}.", hr);
+        g_logger->error("INetFwRules::get_Rules failed 0x{:x}.",
+                        static_cast<unsigned long>(hr));
         return NULL;
     }
     return pFwRules;
@@ -53,7 +55,8 @@ CComPtr<INetFwRule> CreateFireWallRule()
                           __uuidof(INetFwRule), (void**)&pFwRule);
     if (FAILED(hr))
     {
-        g_logger->error("CoCreateInstance INetFwRule failed 0x{:x}.", hr);
+        g_logger->error("CoCreateInstance INetFwRule failed 0x{:x}.",
+                        static_cast<unsigned long>(hr));
         return CComPtr<INetFwRule>(NULL);
     }
     return CComPtr<INetFwRule>(pFwRule);
@@ -66,7 +69,8 @@ bool SetFireWallRuleName(CComPtr<INetFwRule>& pRule, const std::string& name)
     HRESULT hr = pRule->put_Name(bstrRuleName.get());
     if (FAILED(hr))
     {
-        g_logger->error("INetFwRule::put_Name failed 0x{:x}.", hr);
+        g_logger->error("INetFwRule::put_Name failed 0x{:x}.",
+                        static_cast<unsigned long>(hr));
         return false;
     }
     return true;
@@ -81,7 +85,8 @@ bool SetFireWallRuleDescription(CComPtr<INetFwRule>& pRule,
     HRESULT hr = pRule->put_Description(bstrRuleDescription.get());
     if (FAILED(hr))
     {
-        g_logger->error("INetFwRule::put_Description failed 0x{:x}.", hr);
+        g_logger->error("INetFwRule::put_Description failed 0x{:x}.",
+                        static_cast<unsigned long>(hr));
         return false;
     }
     return true;
@@ -93,7 +98,8 @@ bool SetFireWallRuleDirection(CComPtr<INetFwRule>& pRule,
     HRESULT hr = pRule->put_Direction(flag);
     if (FAILED(hr))
     {
-        g_logger->error("INetFwRule::put_Direction failed 0x{:x}.", hr);
+        g_logger->error("INetFwRule::put_Direction failed 0x{:x}.",
+                        static_cast<unsigned long>(hr));
         return false;
     }
     return true;
@@ -104,7 +110,8 @@ bool SetFireWallRuleProtocol(CComPtr<INetFwRule>& pRule, const LONG flag)
     HRESULT hr = pRule->put_Protocol(flag);
     if (FAILED(hr))
     {
-        g_logger->error("INetFwRule::put_Protocol failed 0x{:x}.", hr);
+        g_logger->error("INetFwRule::put_Protocol failed 0x{:x}.",
+                        static_cast<unsigned long>(hr));
         return false;
     }
     return true;
@@ -117,7 +124,8 @@ bool SetFireWallRuleLocalPorts(CComPtr<INetFwRule>& pRule,
     HRESULT hr = pRule->put_LocalPorts(bstrRulePort.get());
     if (FAILED(hr))
     {
-        g_logger->error("INetFwRule::put_LocalPorts failed 0x{:x}.", hr);
+        g_logger->error("INetFwRule::put_LocalPorts failed 0x{:x}.",
+                        static_cast<unsigned long>(hr));
         return false;
     }
     return true;
@@ -131,7 +139,8 @@ bool SetFireWallRuleRemoteAddresses(CComPtr<INetFwRule>& pRule,
     HRESULT hr = pRule->put_RemoteAddresses(bstrRuleAddress.get());
     if (FAILED(hr))
     {
-        g_logger->error("INetFwRule::put_RemoteAddresses failed 0x{:x}.", hr);
+        g_logger->error("INetFwRule::put_RemoteAddresses failed 0x{:x}.",
+                        static_cast<unsigned long>(hr));
         return false;
     }
     return true;
@@ -142,7 +151,8 @@ bool SetFireWallRuleAction(CComPtr<INetFwRule>& pRule, const NET_FW_ACTION flag)
     HRESULT hr = pRule->put_Action(flag);
     if (FAILED(hr))
     {
-        g_logger->error("INetFwRule::put_Action failed 0x{:x}.", hr);
+        g_logger->error("INetFwRule::put_Action failed 0x{:x}.",
+                        static_cast<unsigned long>(hr));
         return false;
     }
     return true;
@@ -158,7 +168,8 @@ bool SetFireWallRuleEnabled(CComPtr<INetFwRule>& pRule, const bool enable)
     HRESULT hr = pRule->put_Enabled(flag);
     if (FAILED(hr))
     {
-        g_logger->error("INetFwRule::put_Enabled failed 0x{:x}.", hr);
+        g_logger->error("INetFwRule::put_Enabled failed 0x{:x}.",
+                        static_cast<unsigned long>(hr));
         return false;
     }
     return true;
@@ -169,7 +180,8 @@ bool AddRule(CComPtr<INetFwRules>& rules, CComPtr<INetFwRule>& pRule)
     HRESULT hr = rules->Add(pRule);
     if (FAILED(hr))
     {
-        g_logger->error("INetFwRules::Add failed 0x{:x}.", hr);
+        g_logger->error("INetFwRules::Add failed 0x{:x}.",
+                        static_cast<unsigned long>(hr));
         return false;
     }
     return true;
@@ -276,7 +288,8 @@ bool DeleteRulesByRegex(const std::string& expr)
     hr = pRules->get_Count(&RulesCount);
     if (FAILED(hr))
     {
-        g_logger->error("INetFwRules::get_Count failed 0x{:x}.", hr);
+        g_logger->error("INetFwRules::get_Count failed 0x{:x}.",
+                        static_cast<unsigned long>(hr));
         return false;
     }
 
@@ -285,7 +298,8 @@ bool DeleteRulesByRegex(const std::string& expr)
     hr = pRules->get__NewEnum(&pEnumerator);
     if (FAILED(hr))
     {
-        g_logger->error("INetFwRules::get__NewEnum failed 0x{:x}.", hr);
+        g_logger->error("INetFwRules::get__NewEnum failed 0x{:x}.",
+                        static_cast<unsigned long>(hr));
         return false;
     }
 
@@ -294,7 +308,7 @@ bool DeleteRulesByRegex(const std::string& expr)
     if (FAILED(hr))
     {
         g_logger->error("get__NewEnum failed to produce IEnumVariant 0x{:x}.",
-                        hr);
+                        static_cast<unsigned long>(hr));
         return false;
     }
 
