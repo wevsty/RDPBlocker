@@ -178,12 +178,21 @@ ApplicationConfig::~ApplicationConfig()
 bool ApplicationConfig::load_config_file()
 {
     bool bret = false;
+
+    // 读取文件
+    std::string file_text;
+    std::vector<char> file_buffer;
+    bool b_result = read_binary_file(file_buffer, m_file_path);
+    if (b_result == false)
+    {
+        std::cout << "Read file failed." << std::endl;
+        return bret;
+    }
+    file_text.assign(file_buffer.data(), file_buffer.size());
+
+    // 解析配置文件
     try
     {
-        std::string file_text;
-        std::vector<char> file_buffer;
-        read_binary_file(file_buffer, m_file_path);
-        file_text.assign(file_buffer.data(), file_buffer.size());
         YAML::Node root_node = YAML::Load(file_text);
 
         // 阻挡配置
@@ -254,11 +263,6 @@ bool ApplicationConfig::load_config_file()
 
         bret = true;
     }
-    catch (const boost::nowide::fstream::failure& err)
-    {
-        std::cout << "Exception when opening file." << std::endl;
-        std::cout << err.what() << std::endl;
-    }
     catch (const YAML::Exception& err)
     {
         std::cout << "Exception when load file." << std::endl;
@@ -268,17 +272,23 @@ bool ApplicationConfig::load_config_file()
     return bret;
 }
 
-void ApplicationConfig::read_binary_file(std::vector<char>& buffer,
+bool ApplicationConfig::read_binary_file(std::vector<char>& buffer,
                                          const std::string& filepath)
 {
+    bool bret = false;
     boost::nowide::fstream fs(filepath, std::ios::in | std::ios::binary);
-    fs.seekg(0, std::ios::end);
-    std::size_t n_filesize = fs.tellg();
-    if (n_filesize > 0)
+    if (fs.is_open())
     {
-        fs.seekg(0, std::ios::beg);
-        buffer.resize(n_filesize);
-        fs.read(buffer.data(), n_filesize);
+        fs.seekg(0, std::ios::end);
+        std::size_t n_filesize = fs.tellg();
+        if (n_filesize > 0)
+        {
+            fs.seekg(0, std::ios::beg);
+            buffer.resize(n_filesize);
+            fs.read(buffer.data(), n_filesize);
+        }
+        fs.close();
+        bret = true;
     }
-    fs.close();
+    return bret;
 }

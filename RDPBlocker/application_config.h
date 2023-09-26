@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <cctype>
+#include <stdexcept>
 
 #include <boost/nowide/fstream.hpp>
 #include "spdlog/spdlog.h"
@@ -144,7 +145,7 @@ class ApplicationConfig
 
     bool load_config_file();
 
-    static void read_binary_file(std::vector<char>& buffer,
+    static bool read_binary_file(std::vector<char>& buffer,
                                  const std::string& filepath);
 };
 
