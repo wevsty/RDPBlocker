@@ -201,6 +201,7 @@ void delete_expire_remote_address(
     {
         if (it->second.is_blocked() == true)
         {
+            it++;
             continue;
         }
         if (it->second.is_expired() == true)
