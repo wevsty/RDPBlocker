@@ -48,6 +48,7 @@ Type: filesandordirs; Name: "{app}"
 var
     SecurityConfigPage: TWizardPage;
     ChkForceNetworkUserAuth: TCheckBox;
+    ChkForceNTLMV2: TCheckBox;
     ChkForceSecurityLayer: TCheckBox;
     ChkMinEncryptionLevel: TCheckBox;
     ChkMinTLSVersion: TCheckBox;
@@ -109,17 +110,27 @@ begin
     ChkForceNetworkUserAuth.Top := ScaleY(40);
     ChkForceNetworkUserAuth.Width := SecurityConfigPage.SurfaceWidth;
     ChkForceNetworkUserAuth.Height := ScaleY(20);
-    ChkForceNetworkUserAuth.Caption := 'ForceNetworkUserAuth';
+    ChkForceNetworkUserAuth.Caption := 'Force enable NetworkUserAuth';
     ChkForceNetworkUserAuth.Parent := SecurityConfigPage.Surface;
     ChkForceNetworkUserAuth.Enabled := true;
     ChkForceNetworkUserAuth.Checked := true;
     
+    ChkForceNTLMV2 := TCheckBox.Create(SecurityConfigPage);
+    ChkForceNTLMV2.Left := ScaleX(40);
+    ChkForceNTLMV2.Top := ChkForceNetworkUserAuth.Top + ScaleY(40);
+    ChkForceNTLMV2.Width := SecurityConfigPage.SurfaceWidth;
+    ChkForceNTLMV2.Height := ScaleY(20);
+    ChkForceNTLMV2.Caption := 'Force only accept NTLMV2';
+    ChkForceNTLMV2.Parent := SecurityConfigPage.Surface;
+    ChkForceNTLMV2.Enabled := true;
+    ChkForceNTLMV2.Checked := true;
+    
     ChkForceSecurityLayer := TCheckBox.Create(SecurityConfigPage);
     ChkForceSecurityLayer.Left := ScaleX(40);
-    ChkForceSecurityLayer.Top := ChkForceNetworkUserAuth.Top + ScaleY(40);
+    ChkForceSecurityLayer.Top := ChkForceNTLMV2.Top + ScaleY(40);
     ChkForceSecurityLayer.Width := SecurityConfigPage.SurfaceWidth;
     ChkForceSecurityLayer.Height := ScaleY(20);
-    ChkForceSecurityLayer.Caption := 'ForceSecurityLayer';
+    ChkForceSecurityLayer.Caption := 'Force enable SecurityLayer';
     ChkForceSecurityLayer.Parent := SecurityConfigPage.Surface;
     ChkForceSecurityLayer.Enabled := true;
     ChkForceSecurityLayer.Checked := true;
@@ -129,7 +140,7 @@ begin
     ChkMinEncryptionLevel.Top := ChkForceSecurityLayer.Top + ScaleY(40);
     ChkMinEncryptionLevel.Width := SecurityConfigPage.SurfaceWidth;
     ChkMinEncryptionLevel.Height := ScaleY(20);
-    ChkMinEncryptionLevel.Caption := 'SetMinEncryptionLevel';
+    ChkMinEncryptionLevel.Caption := 'Set MinEncryptionLevel';
     ChkMinEncryptionLevel.Parent := SecurityConfigPage.Surface;
     ChkMinEncryptionLevel.Enabled := true;
     ChkMinEncryptionLevel.Checked := true;
@@ -139,10 +150,11 @@ begin
     ChkMinTLSVersion.Top := ChkMinEncryptionLevel.Top + ScaleY(40);
     ChkMinTLSVersion.Width := SecurityConfigPage.SurfaceWidth;
     ChkMinTLSVersion.Height := ScaleY(20);
-    ChkMinTLSVersion.Caption := 'SetMinTLSVersion';
+    ChkMinTLSVersion.Caption := 'Set MinTLSVersion';
     ChkMinTLSVersion.Parent := SecurityConfigPage.Surface;
     ChkMinTLSVersion.Enabled := true;
     ChkMinTLSVersion.Checked := true;
+
 end;
 
 // 安装向导初始化
@@ -169,6 +181,10 @@ begin
         begin
         RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services', 'UserAuthentication', 1);
         RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp', 'UserAuthentication', 1);
+        end;
+        if (ChkForceNTLMV2.Checked) then
+        begin
+        RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Lsa', 'LmCompatibilityLevel', 5);
         end;
         if (ChkForceSecurityLayer.Checked) then
         begin
