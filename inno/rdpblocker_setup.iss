@@ -4,6 +4,7 @@
 #define ReleaseVersion "1.2.6.4"
 #define ProjectURL "https://github.com/wevsty/RDPBlocker"
 #define GUID "B476FB3F-F5A2-4F34-A0A6-E74EA3962FAD"
+#define OutputFileName "rdpblocker_setup"
 
 [Setup]
 AppId={{{#GUID}}
@@ -11,11 +12,15 @@ AppName={#ProjectName}
 AppVersion={#ReleaseVersion}
 AppSupportURL={#ProjectURL}
 
+VersionInfoOriginalFileName={#OutputFileName}.exe
+VersionInfoVersion={#ReleaseVersion}
+VersionInfoDescription={#ProjectName} installer
+
 DefaultDirName={commonpf}\{#ProjectName}
 DefaultGroupName={#ProjectName}
 AllowNoIcons=yes
 LicenseFile=.\Release\LICENSE
-OutputBaseFilename=rdpblocker_setup
+OutputBaseFilename={#OutputFileName}
 Compression=lzma2
 SolidCompression=yes
 ArchitecturesAllowed=x64
