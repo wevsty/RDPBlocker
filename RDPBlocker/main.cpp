@@ -372,13 +372,31 @@ void check_program_file()
 {
     std::string self_path = self_file_path();
     std::wstring ws_path = utf_to_utf<wchar_t>(self_path);
-    bool status = check_pe_checksum(ws_path);
+    const bool status = check_pe_checksum(ws_path);
     if (status == false)
     {
         std::cout << "Check program file failed" << std::endl;
         std::cout << "The file has been corrupted" << std::endl;
         std::exit(APPLICATION_EXIT_CODE::FAILED);
     }
+}
+
+void display_build_info()
+{
+    std::cout << "RDPBlocker build info:" << std::endl;
+    std::cout << "application version: " << g_config.m_build_version
+              << std::endl;
+    std::cout << "build date: " << g_config.m_build_date << std::endl;
+#if defined(_MSC_VER)
+    std::cout << "build compiler: "
+              << "MSVC " << _MSC_VER << std::endl;
+#endif
+    std::cout << std::endl << "Library version:" << std::endl;
+    std::cout << "boost: " << BOOST_VERSION / 100000 << '.'
+              << BOOST_VERSION / 100 % 1000 << '.' << BOOST_VERSION % 100
+              << std::endl;
+    std::cout << "spdlog: " << SPDLOG_VER_MAJOR << '.' << SPDLOG_VER_MINOR
+              << '.' << SPDLOG_VER_PATCH << std::endl;
 }
 
 // 解析命令行参数
@@ -409,16 +427,7 @@ void prase_argv(int argc, char* argv[])
         }
         if (var_map.count("version") != 0)
         {
-            std::cout << "RDPBlocker build info" << std::endl;
-            std::cout << "Application version: " << g_config.m_build_version
-                      << std::endl;
-            std::cout << "Build date: " << g_config.m_build_date << std::endl;
-#if defined(_MSC_VER)
-            std::cout << "Build compiler: "
-                      << "MSVC " << _MSC_VER << std::endl;
-#endif
-            std::cout << "Boost lib: " << BOOST_LIB_VERSION << std::endl;
-
+            display_build_info();
             std::exit(APPLICATION_EXIT_CODE::SUCCESS);
         }
         if (var_map.count("config") == 0)
