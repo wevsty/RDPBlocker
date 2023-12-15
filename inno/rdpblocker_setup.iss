@@ -48,7 +48,7 @@ Type: filesandordirs; Name: "{app}"
 var
     SecurityConfigPage: TWizardPage;
     ChkForceNetworkUserAuth: TCheckBox;
-    ChkForceNTLMV2: TCheckBox;
+    ChkDisableNTLMV1: TCheckBox;
     ChkForceSecurityLayer: TCheckBox;
     ChkMinEncryptionLevel: TCheckBox;
     ChkMinTLSVersion: TCheckBox;
@@ -115,19 +115,19 @@ begin
     ChkForceNetworkUserAuth.Enabled := true;
     ChkForceNetworkUserAuth.Checked := true;
     
-    ChkForceNTLMV2 := TCheckBox.Create(SecurityConfigPage);
-    ChkForceNTLMV2.Left := ScaleX(40);
-    ChkForceNTLMV2.Top := ChkForceNetworkUserAuth.Top + ScaleY(40);
-    ChkForceNTLMV2.Width := SecurityConfigPage.SurfaceWidth;
-    ChkForceNTLMV2.Height := ScaleY(20);
-    ChkForceNTLMV2.Caption := 'Force only accept NTLMV2';
-    ChkForceNTLMV2.Parent := SecurityConfigPage.Surface;
-    ChkForceNTLMV2.Enabled := true;
-    ChkForceNTLMV2.Checked := true;
+    ChkDisableNTLMV1 := TCheckBox.Create(SecurityConfigPage);
+    ChkDisableNTLMV1.Left := ScaleX(40);
+    ChkDisableNTLMV1.Top := ChkForceNetworkUserAuth.Top + ScaleY(40);
+    ChkDisableNTLMV1.Width := SecurityConfigPage.SurfaceWidth;
+    ChkDisableNTLMV1.Height := ScaleY(20);
+    ChkDisableNTLMV1.Caption := 'Disable NTLMV1 authentication';
+    ChkDisableNTLMV1.Parent := SecurityConfigPage.Surface;
+    ChkDisableNTLMV1.Enabled := true;
+    ChkDisableNTLMV1.Checked := true;
     
     ChkForceSecurityLayer := TCheckBox.Create(SecurityConfigPage);
     ChkForceSecurityLayer.Left := ScaleX(40);
-    ChkForceSecurityLayer.Top := ChkForceNTLMV2.Top + ScaleY(40);
+    ChkForceSecurityLayer.Top := ChkDisableNTLMV1.Top + ScaleY(40);
     ChkForceSecurityLayer.Width := SecurityConfigPage.SurfaceWidth;
     ChkForceSecurityLayer.Height := ScaleY(20);
     ChkForceSecurityLayer.Caption := 'Force enable SecurityLayer';
@@ -182,7 +182,7 @@ begin
         RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services', 'UserAuthentication', 1);
         RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp', 'UserAuthentication', 1);
         end;
-        if (ChkForceNTLMV2.Checked) then
+        if (ChkDisableNTLMV1.Checked) then
         begin
         RegWriteDWordValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Lsa', 'LmCompatibilityLevel', 5);
         end;
