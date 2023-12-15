@@ -2,7 +2,7 @@
 
 SystemComInitialize::SystemComInitialize()
 {
-    HRESULT hResult = CoInitializeEx(0, COINIT_MULTITHREADED);
+    const HRESULT hResult = CoInitializeEx(0, COINIT_MULTITHREADED);
     switch (hResult)
     {
         case S_OK:
