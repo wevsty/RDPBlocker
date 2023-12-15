@@ -23,7 +23,12 @@ Note: Only X64 version is provided by default, you need to compile it yourself i
 
 
 ## Install
-This tool provides an installation wizard packaged by Inno Setup, which users can use directly to install.
+This tool provides an installation package by Inno Setup that users can install directly.
+
+You can download "rdpblocker_setup.7z" install tool.
+
+[Dwonload link](https://github.com/wevsty/RDPBlocker/releases)
+
 
 The program will be installed by default in the ```C:\Program Files\RDPBlocker```
 

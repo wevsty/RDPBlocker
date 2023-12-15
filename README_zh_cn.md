@@ -23,7 +23,12 @@ Windows 10 x64 或 Windows Server 2016 x64 以及更高版本。
 
 
 ## 安装
-本工具提供了一个由 Inno Setup 打包的安装向导，用户可以直接使用该向导进行安装。
+本工具提供了一个由 Inno Setup 打包的安装程序，用户可以直接使用该向导进行安装。
+
+用户可以下载 "rdpblocker_setup.7z" 来安装本工具。
+
+[下载地址](https://github.com/wevsty/RDPBlocker/releases)
+
 
 程序将默认安装在 ```C:\Program Files\RDPBlocker```
 
