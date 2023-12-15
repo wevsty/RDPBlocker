@@ -1,7 +1,7 @@
 #define ProjectName "RDPBlocker"
 #define ServiceWrapperAppName "RDPBlocker_service.exe"
 #define ServiceWrapperConfigName "RDPBlocker_service.xml"
-#define ReleaseVersion "1.2.6.4"
+#define ReleaseVersion "1.2.6.5"
 #define ProjectURL "https://github.com/wevsty/RDPBlocker"
 #define GUID "B476FB3F-F5A2-4F34-A0A6-E74EA3962FAD"
 #define OutputFileName "rdpblocker_setup"
