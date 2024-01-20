@@ -130,15 +130,37 @@ spdlog https://github.com/gabime/spdlog
 
 yaml-cpp https://github.com/jbeder/yaml-cpp
 
-If you use the project files provided in this project, you need to set the environment variables before compiling.
+If you use the provided vcxproj, you need to set the following environment variables before compilation.
 ```
-$(BOOST_ROOT)
 $(BOOST_INCLUDE)
 $(BOOST_LIB)
 $(SPDLOG_INCLUDE)
 $(SPDLOG_LIB)
 $(YAML_CPP_INCLUDE)
 $(YAML_CPP_LIB)
+```
+If you use CMAKE, you need to set the following environment variables before compilation.
+```
+$(BOOST_ROOT)
+$(SPDLOG_INCLUDE)
+$(SPDLOG_LIB)
+$(YAML_CPP_INCLUDE)
+$(YAML_CPP_LIB)
+```
+
+### Build example
+Use cmake to compile this project
+```bat
+setx "BOOST_ROOT" "D:\open_library\boost" /m
+setx "YAML_CPP_INCLUDE" "D:\open_library\yaml-cpp\include" /m
+setx "YAML_CPP_LIB" "D:\open_library\yaml-cpp" /m
+setx "SPDLOG_INCLUDE" "D:\open_library\spdlog\include" /m
+setx "SPDLOG_LIB" "D:\open_library\spdlog\build" /m
+mkdir build
+cd build
+cmake .. --fresh
+cmake --build . --config Debug
+cmake --build . --config Release
 ```
 
 If you need to compile and install the wizard, you will also need Inno setup compilers.

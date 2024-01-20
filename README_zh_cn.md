@@ -123,7 +123,7 @@ IP_Address:
 如果你需要的话，也可以尝试自己编译这个项目。
 
 
-### 构建要求
+### 编译要求
 Visual Studio 2022 (MSVC 14.3)
 
 Boost Library https://www.boost.org
@@ -132,15 +132,37 @@ spdlog https://github.com/gabime/spdlog
 
 yaml-cpp https://github.com/jbeder/yaml-cpp
 
-如果使用本项目提供的工程文件，需要在编译前设置环境变量。
+如果使用提供的 vcxproj 需要在编译前设置如下环境变量。
 ```
-$(BOOST_ROOT)
 $(BOOST_INCLUDE)
 $(BOOST_LIB)
 $(SPDLOG_INCLUDE)
 $(SPDLOG_LIB)
 $(YAML_CPP_INCLUDE)
 $(YAML_CPP_LIB)
+```
+如果使用CMAKE 需要在编译前设置如下环境变量。
+```
+$(BOOST_ROOT)
+$(SPDLOG_INCLUDE)
+$(SPDLOG_LIB)
+$(YAML_CPP_INCLUDE)
+$(YAML_CPP_LIB)
+```
+
+### 编译举例
+使用cmake编译本项目
+```bat
+setx "BOOST_ROOT" "D:\open_library\boost" /m
+setx "YAML_CPP_INCLUDE" "D:\open_library\yaml-cpp\include" /m
+setx "YAML_CPP_LIB" "D:\open_library\yaml-cpp" /m
+setx "SPDLOG_INCLUDE" "D:\open_library\spdlog\include" /m
+setx "SPDLOG_LIB" "D:\open_library\spdlog\build" /m
+mkdir build
+cd build
+cmake .. --fresh
+cmake --build . --config Debug
+cmake --build . --config Release
 ```
 
 如果你需要编译和安装向导，你还需要 Inno setup 编译器。
