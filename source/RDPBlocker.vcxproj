@@ -79,13 +79,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(BOOST_INCLUDE);$(SPDLOG_INCLUDE);$(YAML_CPP_INCLUDE);$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_LIB);$(YAML_CPP_LIB)\Debug;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(BOOST_LIB);$(SPDLOG_LIB);$(YAML_CPP_LIB)\Debug;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(BOOST_INCLUDE);$(SPDLOG_INCLUDE);$(YAML_CPP_INCLUDE);$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_LIB);$(YAML_CPP_LIB)\Release;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(BOOST_LIB);$(SPDLOG_LIB);$(YAML_CPP_LIB)\Release;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
     <CodeAnalysisRuleSet>MixedRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
