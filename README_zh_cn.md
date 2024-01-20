@@ -134,10 +134,12 @@ yaml-cpp https://github.com/jbeder/yaml-cpp
 
 如果使用本项目提供的工程文件，需要在编译前设置环境变量。
 ```
+$(BOOST_ROOT)
 $(BOOST_INCLUDE)
-$(SPDLOG_INCLUDE)
-$(YAML_CPP_INCLUDE)
 $(BOOST_LIB)
+$(SPDLOG_INCLUDE)
+$(SPDLOG_LIB)
+$(YAML_CPP_INCLUDE)
 $(YAML_CPP_LIB)
 ```
 

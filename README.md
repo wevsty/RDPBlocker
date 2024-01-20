@@ -132,10 +132,12 @@ yaml-cpp https://github.com/jbeder/yaml-cpp
 
 If you use the project files provided in this project, you need to set the environment variables before compiling.
 ```
+$(BOOST_ROOT)
 $(BOOST_INCLUDE)
-$(SPDLOG_INCLUDE)
-$(YAML_CPP_INCLUDE)
 $(BOOST_LIB)
+$(SPDLOG_INCLUDE)
+$(SPDLOG_LIB)
+$(YAML_CPP_INCLUDE)
 $(YAML_CPP_LIB)
 ```
 
